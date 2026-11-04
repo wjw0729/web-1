@@ -1,26 +1,71 @@
+/* 基础页面：铺满屏幕，高级米白背景 */
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: #1f2937;
+    background: #fbfaf7;
+}
 
-        .main {
-            text-align: center;
-            width: 50%;
-            border: 2px solid black;
-            padding: 20px;
-            margin: 50px;
-            background-color: antiquewhite;
-            border-radius: 10px ;
-        }
-        body {
-            background-color: rgb(101, 175, 133);
-        }
-        h1 {font-size: 40px;
-                    color: blueviolet；
-                }
-        h2 {  
-       
-        
-            font-family: verdana;
-            color: blueviolet;
-            padding: 10px;
-        }
+/* 去掉卡片限制，让内容更宽敞，但左右留出呼吸空间 */
+main {
+    max-width: 900px; /* 比刚才宽多了 */
+    margin: 40px auto;
+    padding: 0 20px;
+}
 
-      
+/* 标题和字体 */
+h1 { color: #111827; font-size: 2.5rem; margin-bottom: 20px; }
+h2 { color: #374151; margin-top: 30px; }
+p { font-size: 1.1rem; }
+a { color: #c2410c; text-decoration: none; }
+a:hover { text-decoration: underline; }
 
+/* 顶部导航栏：铺满，居中，加阴影 */
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px 0;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+nav a {
+    font-weight: bold;
+    color: #4b5563;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+}
+nav a:hover { color: #c2410c; text-decoration: none; }
+
+/* 底部 */
+footer {
+    text-align: center;
+    padding: 30px;
+    color: #6b7280;
+    margin-top: 50px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* 图片自适应 */
+img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+/* 按钮美化 */
+button {
+    background: #c2410c;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+button:hover { background: #9a3412; }
+button:disabled { background: #d1d5db; cursor: not-allowed; }
+
+/* 手机端适配 */
+@media (max-width: 600px) {
+    h1 { font-size: 2rem; }
+    nav { gap: 15px; }
+}
