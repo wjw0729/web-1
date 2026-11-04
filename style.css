@@ -1,0 +1,26 @@
+
+        .main {
+            text-align: center;
+            width: 50%;
+            border: 2px solid black;
+            padding: 20px;
+            margin: 50px;
+            background-color: antiquewhite;
+            border-radius: 10px ;
+        }
+        body {
+            background-color: rgb(101, 175, 133);
+        }
+        h1 {font-size: 40px;
+                    color: blueviolet；
+                }
+        h2 {  
+       
+        
+            font-family: verdana;
+            color: blueviolet;
+            padding: 10px;
+        }
+
+      
+

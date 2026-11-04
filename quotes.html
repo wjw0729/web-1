@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My favourite quotes</title>
+    <link rel="icon" href"fun.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+   
+    <header id="site-header"></header>
+
+    <main>
+        <h1>My 15 favorite quotes</h1>
+
+   
+        <div id="quotes-box" style="font-size:24px; font-weight:bold; margin:20px; color:darkblue;">
+            Click the button to generate a random quote
+        </div>
+
+       
+        <button id="random-btn" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
+            Generate Random Quote🎲
+        </button>
+    </main>
+    <footer id="site-footer"></footer>
+
+    <script>
+       
+        const quotes = [
+            "Talk is cheap. Show me the code.",
+            "Simplicity is the ultimate sophistication.",
+            "Stay hungry, stay foolish.",
+            "Practice makes perfect.",
+            "Hello World!",
+            "Code is like humor. When you have to explain it, it is bad.",
+            "First, solve the problem. Then, write the code.",
+            "Experience is the name everyone gives to their mistakes.",
+            "It always seems impossible until it is done.",
+            "Do or do not. There is no try.",
+            "The best way to predict the future is to invent it.",
+            "Make it work, make it right, make it fast.",
+            "Code never lies, comments sometimes do.",
+            "Programs must be written for people to read.",
+            "Learning never exhausts the mind."
+        ];
+
+        const quoteBox = document.getElementById('quotes-box');
+        const randomBtn = document.getElementById('random-btn');
+
+        randomBtn.addEventListener('click', function() {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            quoteBox.innerText = quotes[randomIndex];
+        });
+    </script>
+  
+
+    <script src="parts.js"></script>
+</body>
+</html>
