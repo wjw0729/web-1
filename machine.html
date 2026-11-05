@@ -5,22 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Machine - The Slacking Lab</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="fun.32.png" sizes="32x32">
-    <link rel="apple-touch-icon" href="fun180.png">
+    <link rel="icon" href="favicon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="favicon-180.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <header id="site-header"></header>
-
     <main class="main-card">
         <h1>Catch the <span class="blue-text">Fish</span></h1>
         <p class="subtitle">Try to click the fish's mouth! Warning: It's fast and hates being touched.</p>
-
         <div class="game-ui">
             <div class="ui-item">Attempts: <span id="attempt-count">0</span></div>
             <div class="ui-item">Status: <span id="game-status" class="status-playing">Ready to hunt</span></div>
         </div>
-
         <div id="game-area">
             <div id="fish" class="fish-container">
                 <svg viewBox="0 0 100 60" class="fish-svg">
@@ -31,17 +28,10 @@
                     <circle id="fish-mouth" cx="85" cy="30" r="6" fill="#d93025" class="mouth-target" />
                 </svg>
             </div>
-            <div id="win-text" class="hidden">
-                🎉 CAUGHT! 🎉<br>
-                <span class="win-sub">You successfully slacked off.</span>
-            </div>
+            <div id="win-text" class="hidden">🎉 CAUGHT! 🎉<br><span class="win-sub">You successfully slacked off.</span></div>
         </div>
-
-        <div class="button-container">
-            <button id="restart-btn" class="action-btn hidden">Play Again</button>
-        </div>
+        <div class="button-container"><button id="restart-btn" class="action-btn hidden">Play Again</button></div>
     </main>
-
     <footer id="site-footer"></footer>
     <script src="parts.js"></script>
     <script src="game.js"></script>

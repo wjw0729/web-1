@@ -5,62 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quotes - The Slacking Lab</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="fun.32.png" sizes="32x32">
-    <link rel="apple-touch-icon" href="fun180.png">
+    <link rel="icon" href="favicon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="favicon-180.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <header id="site-header"></header>
-
     <main class="main-card">
         <h1>Random <span class="blue-text">Quotes</span></h1>
         <p class="subtitle">Watch the fish swim in with a random piece of wisdom.</p>
-        
         <div class="fish-quote-container">
             <div class="fish-swimmer" id="fish-swimmer">🐟</div>
             <div class="quote-display">
-                <blockquote id="quote-box">
-                    "Click the button below to catch a fish!"
-                </blockquote>
+                <blockquote id="quote-box">"Click the button below to catch a fish!"</blockquote>
             </div>
         </div>
-
         <div style="text-align: center; margin-top: 2rem;">
             <button id="random-btn" class="action-btn">🎣 Catch a Quote</button>
         </div>
     </main>
-
     <footer id="site-footer"></footer>
     <script src="parts.js"></script>
-
     <script>
         const quotes = [
-            "Talk is cheap. Show me the code.",
-            "Simplicity is the ultimate sophistication.",
-            "Stay hungry, stay foolish.",
-            "Practice makes perfect.",
-            "Hello World!",
-            "Code is like humor. When you have to explain it, it’s bad.",
-            "First, solve the problem. Then, write the code.",
-            "Experience is the name everyone gives to their mistakes.",
-            "It always seems impossible until it is done.",
-            "Do or do not. There is no try.",
-            "The best way to predict the future is to invent it.",
-            "Make it work, make it right, make it fast.",
-            "Code never lies, comments sometimes do.",
-            "Programs must be written for people to read.",
-            "Learning never exhausts the mind."
+            "Talk is cheap. Show me the code.", "Simplicity is the ultimate sophistication.", "Stay hungry, stay foolish.",
+            "Practice makes perfect.", "Hello World!", "Code is like humor. When you have to explain it, it’s bad.",
+            "First, solve the problem. Then, write the code.", "Experience is the name everyone gives to their mistakes.",
+            "It always seems impossible until it is done.", "Do or do not. There is no try.",
+            "The best way to predict the future is to invent it.", "Make it work, make it right, make it fast.",
+            "Code never lies, comments sometimes do.", "Programs must be written for people to read.", "Learning never exhausts the mind."
         ];
-
         const quoteBox = document.getElementById('quote-box');
         const randomBtn = document.getElementById('random-btn');
         const fishSwimmer = document.getElementById('fish-swimmer');
-
         randomBtn.addEventListener('click', function() {
             fishSwimmer.classList.remove('swimming');
             void fishSwimmer.offsetWidth; 
             fishSwimmer.classList.add('swimming');
-
             setTimeout(() => {
                 const randomIndex = Math.floor(Math.random() * quotes.length);
                 quoteBox.textContent = '"' + quotes[randomIndex] + '"';
