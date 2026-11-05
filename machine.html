@@ -3,132 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Useless Machine</title>
+    <title>Machine - The Slacking Lab</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="fun.jpeg" type="image/jpeg">
+    <link rel="icon" href="fun.32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="fun180.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  
     <header id="site-header"></header>
 
-   
-    <main>
-         <main style="text-align: center;">
-        <h1>Click Speed Challenge</h1>
-        <p>Click as fast as you can within 60 seconds!</p>
-        
-       
-        <h2 id="timer-display" style="font-size: 32px; color: #0369a1;">Time: 10s</h2>
-        
-        
-        <h2 id="score-display" style="font-size: 64px; color: darkblue; margin: 10px;">0</h2>
-        
-        <div id="result-msg" style="font-size: 30px; height: 50px; margin: 20px;"></div>
+    <main class="main-card">
+        <h1>Catch the <span class="blue-text">Fish</span></h1>
+        <p class="subtitle">Try to click the fish's mouth! Warning: It's fast and hates being touched.</p>
 
-        <div>
-            <button id="start-btn" style="padding: 15px 30px; font-size: 20px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 8px;">
-                Start Game
-            </button>
-            
-            <button id="click-btn" disabled style="padding: 15px 30px; font-size: 20px; cursor: not-allowed; background-color: #ccc; color: white; border: none; border-radius: 8px; margin-left: 10px;">
-                Click Me!
-            </button>
-    
-
-
-
+        <div class="game-ui">
+            <div class="ui-item">Attempts: <span id="attempt-count">0</span></div>
+            <div class="ui-item">Status: <span id="game-status" class="status-playing">Ready to hunt</span></div>
         </div>
 
+        <div id="game-area">
+            <div id="fish" class="fish-container">
+                <svg viewBox="0 0 100 60" class="fish-svg">
+                    <path d="M10,30 Q40,0 80,30 Q40,60 10,30 Z" fill="#1a73e8" />
+                    <path d="M10,30 L-10,10 L-10,50 Z" fill="#1a73e8" />
+                    <circle cx="65" cy="22" r="4" fill="white" />
+                    <circle cx="65" cy="22" r="2" fill="black" />
+                    <circle id="fish-mouth" cx="85" cy="30" r="6" fill="#d93025" class="mouth-target" />
+                </svg>
+            </div>
+            <div id="win-text" class="hidden">
+                🎉 CAUGHT! 🎉<br>
+                <span class="win-sub">You successfully slacked off.</span>
+            </div>
+        </div>
 
-
-
+        <div class="button-container">
+            <button id="restart-btn" class="action-btn hidden">Play Again</button>
+        </div>
     </main>
 
-   
     <footer id="site-footer"></footer>
-    
-  
     <script src="parts.js"></script>
-    
-   
-    <script>
-               
-        const startBtn = document.getElementById('start-btn');
-        const clickBtn = document.getElementById('click-btn');
-        const scoreDisplay = document.getElementById('score-display');
-        const timerDisplay = document.getElementById('timer-display');
-        const resultMsg = document.getElementById('result-msg');
-
-        
-        let count = 0;
-        let timeLeft = 10;
-        let timer; 
-        let isPlaying = false;
-
-      
-        startBtn.addEventListener('click', function() {
-            if (isPlaying) return;
-            
-           
-            isPlaying = true;
-            count = 0;
-            timeLeft = 10;
-            scoreDisplay.innerText = count;
-            timerDisplay.innerText = 'Time: ' + timeLeft + 's';
-            resultMsg.innerText = ''; 
-            
-            
-            clickBtn.disabled = false;
-            clickBtn.style.backgroundColor = '#c2410c';
-            clickBtn.style.cursor = 'pointer';
-            startBtn.style.backgroundColor = '#ccc'; 
-
-            
-            timer = setInterval(function() {
-                timeLeft--;
-                timerDisplay.innerText = 'Time: ' + timeLeft + 's';
-
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer); 
-                    isPlaying = false;
-                    
-                  
-                    clickBtn.disabled = true;
-                    clickBtn.style.backgroundColor = '#ccc';
-                    clickBtn.style.cursor = 'not-allowed';
-                    startBtn.style.backgroundColor = '#4CAF50';
-
-                   
-                    showResult(count);
-                }
-            }, 1000); 
-        });
-
-        clickBtn.addEventListener('click', function() {
-            if (!isPlaying) return; 
-
-            count++;
-            scoreDisplay.innerText = count;
-        });
-
-       
-        function showResult(finalCount) {
-            if (finalCount < 20) {
-                resultMsg.innerText = '😒 Too slow! (Trash)';
-                resultMsg.style.color = 'gray';
-            } else if (finalCount < 40) {
-                resultMsg.innerText = '🙂 Not bad!';
-                resultMsg.style.color = '#0369a1';
-            } else if (finalCount <= 60) {
-                resultMsg.innerText = '🎉 Excellent! You are fast! 🎉';
-                resultMsg.style.color = 'goldenrod';
-            } else {
-                resultMsg.innerText = '🔥 INSANE SPEED! 🔥';
-                resultMsg.style.color = 'red';
-            }
-        }
-
-    </script>
+    <script src="game.js"></script>
 </body>
 </html>

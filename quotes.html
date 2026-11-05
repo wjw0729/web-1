@@ -3,39 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My favourite quotes</title>
-    <link rel="icon" href="fun.32.png" sizes="32x32">
-    <link rel="fun180.png" href="fun180.png">
+    <title>Quotes - The Slacking Lab</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="fun.32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="fun180.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-   
     <header id="site-header"></header>
 
-    <main>
-        <h1>My 15 favorite quotes</h1>
-
-   
-        <div id="quotes-box" style="font-size:24px; font-weight:bold; margin:20px; color:darkblue;">
-            Click the button to generate a random quote
+    <main class="main-card">
+        <h1>Random <span class="blue-text">Quotes</span></h1>
+        <p class="subtitle">Watch the fish swim in with a random piece of wisdom.</p>
+        
+        <div class="fish-quote-container">
+            <div class="fish-swimmer" id="fish-swimmer">🐟</div>
+            <div class="quote-display">
+                <blockquote id="quote-box">
+                    "Click the button below to catch a fish!"
+                </blockquote>
+            </div>
         </div>
 
-       
-        <button id="random-btn" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
-            Generate Random Quote🎲
-        </button>
+        <div style="text-align: center; margin-top: 2rem;">
+            <button id="random-btn" class="action-btn">🎣 Catch a Quote</button>
+        </div>
     </main>
+
     <footer id="site-footer"></footer>
+    <script src="parts.js"></script>
 
     <script>
-       
         const quotes = [
             "Talk is cheap. Show me the code.",
             "Simplicity is the ultimate sophistication.",
             "Stay hungry, stay foolish.",
             "Practice makes perfect.",
             "Hello World!",
-            "Code is like humor. When you have to explain it, it is bad.",
+            "Code is like humor. When you have to explain it, it’s bad.",
             "First, solve the problem. Then, write the code.",
             "Experience is the name everyone gives to their mistakes.",
             "It always seems impossible until it is done.",
@@ -47,16 +52,20 @@
             "Learning never exhausts the mind."
         ];
 
-        const quoteBox = document.getElementById('quotes-box');
+        const quoteBox = document.getElementById('quote-box');
         const randomBtn = document.getElementById('random-btn');
+        const fishSwimmer = document.getElementById('fish-swimmer');
 
         randomBtn.addEventListener('click', function() {
-            const randomIndex = Math.floor(Math.random() * quotes.length);
-            quoteBox.innerText = quotes[randomIndex];
+            fishSwimmer.classList.remove('swimming');
+            void fishSwimmer.offsetWidth; 
+            fishSwimmer.classList.add('swimming');
+
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * quotes.length);
+                quoteBox.textContent = '"' + quotes[randomIndex] + '"';
+            }, 500); 
         });
     </script>
-  
-
-    <script src="parts.js"></script>
 </body>
 </html>

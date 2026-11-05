@@ -1,71 +1,186 @@
-/* 基础页面：铺满屏幕，高级米白背景 */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-    margin: 0;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
     line-height: 1.6;
-    color: #1f2937;
-    background: #fbfaf7;
-}
-
-/* 去掉卡片限制，让内容更宽敞，但左右留出呼吸空间 */
-main {
-    max-width: 900px; /* 比刚才宽多了 */
-    margin: 40px auto;
-    padding: 0 20px;
-}
-
-/* 标题和字体 */
-h1 { color: #111827; font-size: 2.5rem; margin-bottom: 20px; }
-h2 { color: #374151; margin-top: 30px; }
-p { font-size: 1.1rem; }
-a { color: #c2410c; text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-/* 顶部导航栏：铺满，居中，加阴影 */
-nav {
     display: flex;
-    justify-content: center;
-    gap: 30px;
-    padding: 20px 0;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    flex-direction: column;
+    min-height: 100vh;
 }
-nav a {
-    font-weight: bold;
-    color: #4b5563;
-    font-size: 1.1rem;
+a { text-decoration: none; color: inherit; }
+
+
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    width: 100%;
+}
+.top-nav .logo { font-weight: 800; font-size: 1.2rem; color: #1a1a1a; }
+.nav-links { display: flex; gap: 2rem; }
+.nav-links a {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #555;
     transition: color 0.2s;
+    padding-bottom: 4px;
 }
-nav a:hover { color: #c2410c; text-decoration: none; }
-
-/* 底部 */
-footer {
-    text-align: center;
-    padding: 30px;
-    color: #6b7280;
-    margin-top: 50px;
-    border-top: 1px solid #e5e7eb;
+.nav-links a:hover, .nav-links a.active {
+    color: #d93025;
+    border-bottom: 2px solid #d93025;
 }
-
-/* 图片自适应 */
-img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-
-/* 按钮美化 */
-button {
-    background: #c2410c;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 16px;
+.theme-toggle {
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex; justify-content: center; align-items: center;
     cursor: pointer;
 }
-button:hover { background: #9a3412; }
-button:disabled { background: #d1d5db; cursor: not-allowed; }
 
-/* 手机端适配 */
-@media (max-width: 600px) {
-    h1 { font-size: 2rem; }
-    nav { gap: 15px; }
+
+.main-card {
+    flex: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #3b5998;
+    border-radius: 12px;
+    padding: 3rem;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+h1 { font-size: 2.5rem; font-weight: 800; color: #1a1a1a; margin-bottom: 0.5rem; }
+.blue-text { color: #1a73e8; }
+.subtitle { color: #666; margin-bottom: 2rem; font-size: 1.1rem; }
+h2 { font-size: 1.5rem; margin: 2rem 0 1rem; font-weight: 800; color: #1a1a1a; }
+
+
+.hero-image { margin: 2rem 0; }
+.hero-image img { width: 100%; max-height: 450px; object-fit: cover; border-radius: 8px; }
+
+.fish-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 2rem; }
+.fish-card {
+    position: relative; display: flex; justify-content: center; align-items: center;
+    height: 70px; background-color: #3b5998;
+    border-radius: 50% 10% 10% 50% / 50% 50% 50% 50%;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    box-shadow: 0 4px 10px rgba(59, 89, 152, 0.2);
+}
+.fish-card::after {
+    content: ''; position: absolute; right: -25px; top: 50%; transform: translateY(-50%);
+    width: 0; height: 0; border-top: 35px solid transparent;
+    border-bottom: 35px solid transparent; border-left: 30px solid #3b5998;
+    transition: border-left-color 0.3s ease;
+}
+.fish-card::before {
+    content: ''; position: absolute; left: 15px; top: 15px;
+    width: 12px; height: 12px; background-color: #fff; border-radius: 50%;
+}
+.fish-text { color: white; font-weight: 800; font-size: 1.1rem; margin-left: 15px; z-index: 10; }
+.fish-card:hover { background-color: #d93025; transform: translateX(10px); }
+.fish-card:hover::after { border-left-color: #d93025; }
+
+
+.fish-quote-container { position: relative; margin: 4rem 0; overflow: hidden; }
+.quote-display {
+    background-color: #f8f9fa; border-radius: 8px; border: 1px dashed #3b5998;
+    padding: 3rem 2rem; min-height: 200px; display: flex; align-items: center; justify-content: center;
+}
+blockquote#quote-box {
+    font-size: 1.8rem; font-weight: 600; color: #1a73e8;
+    text-align: center; line-height: 1.5; margin: 0; z-index: 10;
+}
+.fish-swimmer {
+    position: absolute; font-size: 4rem; left: -100px; top: 50%;
+    transform: translateY(-50%); opacity: 0; z-index: 5; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+@keyframes swimIn {
+    0% { left: -100px; opacity: 0; transform: translateY(-50%) rotate(0deg); }
+    50% { opacity: 1; }
+    100% { left: 10%; opacity: 1; transform: translateY(-50%) rotate(-5deg); }
+}
+.fish-swimmer.swimming { animation: swimIn 1s ease-out forwards; }
+
+
+.project-list { margin-top: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.project-item {
+    background-color: #f8f9fa; border-left: 4px solid #3b5998;
+    padding: 1.5rem; border-radius: 0 8px 8px 0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.project-item:hover { transform: translateX(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.project-item dt { font-size: 1.2rem; font-weight: 800; color: #1a73e8; margin-bottom: 0.5rem; }
+.project-item dd { color: #555; font-size: 1rem; margin: 0; }
+
+
+.game-ui { display: flex; justify-content: space-around; font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; color: #555; }
+.ui-item span { color: #1a73e8; }
+.status-playing { color: #d93025 !important; }
+#game-area {
+    position: relative; width: 100%; height: 400px; background-color: #f0f8ff;
+    border: 2px dashed #3b5998; border-radius: 12px; overflow: hidden; cursor: crosshair;
+}
+.fish-container {
+    position: absolute; width: 100px; height: 60px; left: 50%; top: 50%;
+    transform: translate(-50%, -50%); transition: transform 0.1s linear, left 0.2s ease-out, top 0.2s ease-out;
+    user-select: none;
+}
+.fish-svg { width: 100%; height: 100%; filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.1)); }
+.mouth-target { cursor: pointer; transition: r 0.2s ease; }
+.mouth-target:hover { r: 8; }
+#win-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 3rem; font-weight: 800; color: #d93025; text-align: center;
+    pointer-events: none; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+}
+.win-sub { font-size: 1.2rem; color: #555; display: block; margin-top: 10px; }
+.button-container { text-align: center; margin-top: 1.5rem; }
+.hidden { display: none !important; }
+@keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+.action-btn {
+    background-color: #d93025; color: white; border: none; padding: 1rem 2.5rem;
+    font-size: 1.1rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    box-shadow: 0 4px 15px rgba(217, 48, 37, 0.3); transition: transform 0.2s, box-shadow 0.2s;
+}
+.action-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(217, 48, 37, 0.4); }
+
+
+.about-split { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem; }
+.about-left h2 { font-size: 2rem; color: #1a1a1a; margin-bottom: 1rem; line-height: 1.2; }
+.big-statement { font-size: 1.4rem; font-weight: 800; color: #1a73e8; line-height: 1.4; margin-bottom: 1.5rem; }
+.small-desc { font-size: 1.05rem; color: #555; line-height: 1.7; margin-bottom: 2rem; }
+.skills-tags { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.skills-tags span { background-color: #e0f2fe; color: #0369a1; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+.about-right { background-color: #f8f9fa; padding: 2rem; border-radius: 12px; border: 1px solid #eaeaea; }
+.about-right h3 { font-size: 1.5rem; font-weight: 800; color: #1a1a1a; margin-bottom: 0.5rem; }
+.about-right > p { font-size: 0.95rem; color: #666; margin-bottom: 1.5rem; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; font-weight: 600; font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; }
+.form-group input { width: 100%; padding: 0.8rem 1rem; border: 1px solid #ccc; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
+.form-group input:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2); }
+
+.site-footer { max-width: 1100px; margin: 4rem auto 0; padding: 2rem 1rem; border-top: 1px solid #ddd; width: 100%; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+.footer-brand h3 { font-size: 1.2rem; margin-bottom: 1rem; font-weight: 800; }
+.footer-brand p { font-size: 0.9rem; color: #666; max-width: 300px; }
+.footer-nav { display: flex; flex-direction: column; gap: 0.8rem; }
+.footer-nav a { color: #666; font-size: 0.95rem; }
+.footer-nav a:hover { color: #1a73e8; }
+.footer-contact h4 { font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 1rem; color: #555; }
+.footer-contact a { color: #1a73e8; font-size: 0.95rem; }
+.footer-bottom { display: flex; justify-content: space-between; border-top: 1px solid #eaeaea; padding-top: 1.5rem; font-size: 0.85rem; color: #888; }
+
+@media (max-width: 768px) {
+    .footer-grid, .about-split, .fish-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .top-nav { flex-direction: column; gap: 1rem; }
+    .main-card { padding: 1.5rem; border: none; box-shadow: none; }
+    blockquote#quote-box { font-size: 1.3rem; }
+    .fish-swimmer { font-size: 2.5rem; }
+    .fish-card { height: 60px; }
+    .fish-card::after { border-top-width: 30px; border-bottom-width: 30px; }
 }
