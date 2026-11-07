@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery | Scene Portal</title>
+    <meta name="description" content="Five places to visit - Peach Blossom Spring, the Scottish Highlands, an Arctic lake, a mountain lake and the BiUH campus.">
+    <meta name="theme-color" content="#050918">
+    <meta property="og:title" content="Gallery | Scene Portal">
+    <meta property="og:description" content="Five places to visit - Peach Blossom Spring, the Scottish Highlands, an Arctic lake, a mountain lake and the BiUH campus.">
+    <meta property="og:image" content="https://wjw0729.github.io/web-1/scene-portal/images/og-image.jpg">
+    <meta property="og:url" content="https://wjw0729.github.io/web-1/scene-portal/gallery.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1 class="sr-only">The Scene Gallery</h1>
+    <!-- 星空背景 -->
+    <div id="stars-container"></div>
+    
+    <!-- 全局导航 -->
+    <header id="site-header">
+      <nav class="top-nav" id="site-nav" aria-label="Main navigation">
+    <div class="logo">
+        <span>✦ Scene Portal</span>
+    </div>
+    <div class="nav-links">
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="gallery.html" class="nav-item">Gallery</a>
+        <a href="hourglass-intro.html" class="nav-item">Hourglass</a>
+        <a href="museum.html" class="nav-item">Museum</a>
+        <a href="about.html" class="nav-item">About</a>
+    </div>
+    <!-- 右上角三大金刚 -->
+    <div class="nav-icons">
+        <button id="lang-toggle" class="icon-btn" title="Switch Language">中</button>
+        <button id="sound-toggle" class="icon-btn" title="Toggle Sound">🔊</button>
+        <button id="theme-toggle" class="icon-btn" title="Toggle Theme">☾</button>
+    </div>
+</nav>
+      </header>
+
+    <!-- 丝滑翻页画廊容器 -->
+    <main class="gallery-wrapper" aria-label="Scene gallery">
+        
+        <!-- 卡片 1：桃花源 -->
+        <figure class="scene-card">
+            <a href="peach-spring.html" class="card-inner">
+                <img class="card-bg" src="images/gallery-peach.jpg" alt="A peach grove in spring, painted in soft pink light">
+                <div class="card-overlay">
+                    <h2>Peach Blossom Spring</h2>
+                    <p>A Hidden Paradise</p>
+                </div>
+            </a>
+        </figure>
+
+        <!-- 卡片 2：苏格兰高地 -->
+        <figure class="scene-card">
+            <a href="highlands.html" class="card-inner">
+                <img class="card-bg" src="images/gallery-highlands.jpg" alt="Misty Scottish Highlands with layered mountains">
+                <div class="card-overlay">
+                    <h2>Scottish Highlands</h2>
+                    <p>Mystic Mountains and Mist</p>
+                </div>
+            </a>
+        </figure>
+
+        <!-- 卡片 3：北极冰湖 -->
+        <figure class="scene-card">
+            <a href="arctic.html" class="card-inner">
+                <img class="card-bg" src="images/gallery-arctic.jpg" alt="A frozen Arctic lake under a cold blue sky">
+                <div class="card-overlay">
+                    <h2>Arctic Lake</h2>
+                    <p>Frozen Silence</p>
+                </div>
+            </a>
+        </figure>
+
+        <!-- 卡片 4：群山湖泊 -->
+        <figure class="scene-card">
+            <a href="mountains.html" class="card-inner">
+                <img class="card-bg" src="images/gallery-mountains.jpg" alt="A mountain lake reflecting golden evening light">
+                <div class="card-overlay">
+                    <h2>Mountain Lake</h2>
+                    <p>Golden Reflections</p>
+                </div>
+            </a>
+        </figure>
+
+        <!-- 卡片 5：BiUH 校园 -->
+        <figure class="scene-card">
+            <a href="campus.html" class="card-inner">
+                <img class="card-bg" src="images/campus-cover.jpg" alt="The BiUH campus on a clear day">
+                <div class="card-overlay">
+                    <h2>BiUH Campus</h2>
+                    <p>My Second Home</p>
+                </div>
+            </a>
+        </figure>
+
+    </main>
+
+    <!-- 底部 -->
+    <footer class="site-footer" id="site-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <h3>✦ Scene Portal</h3>
+            <p>An immersive 360° 3D scene simulator.</p>
+        </div>
+        <div class="footer-nav">
+            <a href="index.html">Home</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="hourglass-intro.html">Hourglass</a>
+            <a href="museum.html">Museum</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <h4>SAY HELLO</h4>
+            <a href="mailto:1083205161@qq.com">1083205161@qq.com</a>
+        </div>
+    </div>
+    <p class="credits">Images: original scene artwork created and edited by the author (AI-assisted). Brand spiral redrawn as vector by the author. Built with Three.js r128 (bundled locally) and Google Fonts. No data is stored.</p>
+        <div class="footer-bottom">
+        <p>© 2026 WANG Jingwen. Built with care.</p>
+        <a href="#" class="back-to-top">Back to top ↑</a>
+    </div>
+</footer>
+                        
+    <!-- 引入导航和星空生成 -->
+    <script src="parts.js"></script>
+    <script>
+        // 生成星空背景
+        const starsContainer = document.getElementById('stars-container');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = Math.random() * 2 + 2 + 's';
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>

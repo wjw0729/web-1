@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>时空走廊 · Time Corridor</title>
+    <meta name="description" content="Time Corridor - walk through six eras, meet the people who lived there and collect what they left behind.">
+    <meta name="theme-color" content="#050918">
+    <meta property="og:title" content="时空走廊 · Time Corridor">
+    <meta property="og:description" content="Time Corridor - walk through six eras, meet the people who lived there and collect what they left behind.">
+    <meta property="og:image" content="https://wjw0729.github.io/web-1/scene-portal/images/og-image.jpg">
+    <meta property="og:url" content="https://wjw0729.github.io/web-1/scene-portal/hourglass.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#04060c;color:#cfe6f2;font-family:"Segoe UI","Microsoft YaHei",sans-serif;overflow:hidden}
+#app{position:relative;width:100%;height:100%}
+/* ---------- 走廊 ---------- */
+#cor{position:absolute;inset:0;perspective:760px;overflow:hidden;cursor:grab}
+#cw{position:absolute;inset:0;transform-style:preserve-3d}
+.pos{position:absolute;left:50%;top:52%;width:200px;height:184px;margin:-96px 0 0 -100px;transform-style:preserve-3d}
+.card{background:#0b1018;border:1px solid rgba(0,229,255,.32);border-radius:10px;padding:7px;cursor:pointer;transition:border-color .4s,box-shadow .4s}
+.card:hover{border-color:rgba(0,229,255,.8)}
+.card.visited{border-color:rgba(250,199,117,.75)}
+.art{border-radius:6px;overflow:hidden;line-height:0}
+.cap{text-align:center;margin-top:6px}
+.cap b{display:block;font-size:13px;font-weight:500;color:#7fe7ff}
+.card.visited .cap b{color:#FAC775}
+.cap span{font-size:11px;color:#5a6a7d}
+#corHud{position:absolute;top:16px;left:20px;z-index:5;pointer-events:none}
+#corYear{font-size:17px;font-weight:500;color:#7fe7ff}
+#corEra{font-size:12px;color:#66788a;margin-top:3px}
+#corBar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:230px;height:3px;background:rgba(255,255,255,.13);border-radius:2px;z-index:5}
+#corFill{height:100%;width:0;background:#7fe7ff;border-radius:2px}
+#corHint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(200,230,255,.55);z-index:5;transition:opacity .8s}
+#corToast{position:absolute;bottom:64px;left:50%;transform:translate(-50%,8px);padding:8px 16px;background:rgba(11,16,24,.9);border:0.5px solid rgba(0,229,255,.3);border-radius:20px;font-size:12px;color:#7fe7ff;opacity:0;transition:all .35s;white-space:nowrap;z-index:6;pointer-events:none}
+#pkBtn{position:absolute;top:16px;right:20px;z-index:6;color:#7fe7ff;border-color:rgba(0,229,255,.35);background:rgba(11,16,24,.7)}
+button{background:transparent;border:0.5px solid rgba(255,255,255,.4);border-radius:18px;padding:7px 16px;font-size:12px;cursor:pointer;color:#cfe6f2;font-family:inherit}
+button:hover{border-color:rgba(255,255,255,.8)}
+/* ---------- 画中场景 ---------- */
+#sc{position:absolute;inset:0;display:none;background:#000}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+#scHud{position:absolute;top:16px;left:20px;z-index:5;pointer-events:none}
+#scEra{font-size:17px;font-weight:500;color:#FBEAF0}
+#scYear{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px}
+#scClock{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px}
+#scTop{position:absolute;top:16px;right:20px;z-index:6;display:flex;gap:8px}
+#scHint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,.45);z-index:5;pointer-events:none;white-space:nowrap}
+#pocketPanel{position:absolute;bottom:52px;left:20px;z-index:7;width:250px;max-height:46%;overflow:auto;background:rgba(8,12,20,.92);border:0.5px solid rgba(0,229,255,.3);border-radius:12px;padding:14px;display:none;font-size:12px}
+#pocketPanel h4{font-size:13px;font-weight:500;color:#7fe7ff;margin-bottom:8px}
+#pocketPanel .pe{margin:6px 0;color:#cfe6f2}
+#pocketPanel .pe span{color:#FAC775}
+#pocketPanel .empty{color:#66788a}
+/* ---------- 对话（悬浮全息面板） ---------- */
+#dlg{position:absolute;left:50%;top:12%;transform:translateX(-50%);z-index:9;width:min(440px,88%);background:rgba(10,16,28,.52);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(127,231,255,.45);border-radius:18px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 0 46px rgba(0,229,255,.18),inset 0 0 30px rgba(0,229,255,.04);animation:dlgFloat 4.5s ease-in-out infinite}
+@keyframes dlgFloat{0%,100%{margin-top:0}50%{margin-top:-9px}}
+#dlg::before{content:"";position:absolute;left:50%;top:100%;width:1px;height:52px;background:linear-gradient(rgba(127,231,255,.5),transparent)}
+#dlgHead{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:0.5px solid rgba(0,229,255,.2)}
+#dlgName{font-size:13px;font-weight:500;color:#7fe7ff}
+#dlgLog{padding:12px 14px;max-height:210px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.m{max-width:88%;padding:8px 11px;border-radius:10px;font-size:12.5px;line-height:1.55}
+.m.npc{background:rgba(0,229,255,.10);border:0.5px solid rgba(0,229,255,.25);align-self:flex-start}
+.m.me{background:rgba(250,199,117,.10);border:0.5px solid rgba(250,199,117,.3);align-self:flex-end}
+#dlgInRow{display:flex;gap:8px;padding:10px 12px;border-top:0.5px solid rgba(0,229,255,.2)}
+#dlgIn{flex:1;background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.25);border-radius:8px;color:#cfe6f2;padding:8px 10px;font-size:12.5px;outline:none;font-family:inherit}
+#dlgSend{padding:7px 14px}
+/* ---------- 结局 ---------- */
+#end{position:absolute;inset:0;z-index:20;display:none;background:rgba(4,6,12,.96);align-items:center;justify-content:center}
+#endBox{width:min(560px,90%);background:#0b1018;border:1px solid rgba(250,199,117,.5);border-radius:16px;padding:30px;text-align:center}
+#endBox h2{font-size:20px;font-weight:500;color:#FAC775;margin-bottom:6px}
+#endBox p{font-size:12px;color:#66788a;margin-bottom:16px}
+#endGrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
+#endGrid .eg{padding:6px 12px;border:0.5px solid rgba(250,199,117,.4);border-radius:16px;font-size:11px;color:#FAC775}
+.dust{position:absolute;border-radius:50%;background:rgba(130,205,255,.5);pointer-events:none}
+@keyframes drift{from{transform:translate3d(0,0,0);opacity:.5}to{transform:translate3d(8px,-52px,0);opacity:0}}
+/* ---------- 拍照模式 ---------- */
+#photoF{position:absolute;inset:0;z-index:15;display:none;pointer-events:none}
+#photoF .pframe{position:absolute;inset:18px;border:1.5px solid rgba(255,255,255,.5);border-radius:6px;box-shadow:inset 0 0 90px rgba(0,0,0,.55)}
+#photoF .pcap{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);font-size:13px;letter-spacing:3px;color:rgba(255,255,255,.9);text-shadow:0 1px 6px rgba(0,0,0,.8);white-space:nowrap}
+#photoF .pmk{position:absolute;top:30px;left:34px;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.75)}
+</style>
+</head>
+<body>
+    <h1 class="sr-only">The Time Corridor</h1>
+    <style>
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.mini-nav{position:fixed;top:18px;right:18px;z-index:120;font-family:Inter,Arial,sans-serif}
+.mini-nav.mini-lower{top:62px}
+#langBtn{position:absolute;top:16px;right:112px;z-index:6}
+.mini-toggle{width:44px;height:44px;border-radius:50%;border:1px solid rgba(127,231,255,.55);
+ background:rgba(5,10,25,.72);color:#8fe3ff;font-size:19px;cursor:pointer;backdrop-filter:blur(10px)}
+.mini-toggle:hover{border-color:#8fe3ff}
+.mini-links{display:none;position:absolute;top:52px;right:0;min-width:168px;padding:10px;
+ background:rgba(5,10,25,.92);border:1px solid rgba(127,231,255,.35);border-radius:12px;
+ backdrop-filter:blur(12px);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.mini-nav.open .mini-links{display:flex;flex-direction:column;gap:2px}
+.mini-links a{display:block;padding:9px 12px;border-radius:8px;color:#dbeafe;text-decoration:none;font-size:14px}
+.mini-links a:hover,.mini-links a[aria-current="page"]{background:rgba(127,231,255,.14);color:#8fe3ff}
+@media(max-width:768px){.mini-nav{top:12px;right:12px}.mini-toggle{width:42px;height:42px}}
+</style>
+<nav class="mini-nav mini-lower" aria-label="Main navigation">
+  <button class="mini-toggle" aria-expanded="false" aria-label="Open site navigation">☰</button>
+  <div class="mini-links">
+    <a href="index.html">Home</a><a href="gallery.html">Gallery</a>
+    <a href="hourglass-intro.html">Hourglass</a><a href="museum.html">Museum</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
+<script>
+(function(){var n=document.querySelector('.mini-nav'),b=n&&n.querySelector('.mini-toggle');
+ if(!b)return;b.addEventListener('click',function(){var o=n.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false')});
+ var here=location.pathname.split('/').pop()||'index.html';
+ n.querySelectorAll('a').forEach(function(a){if(a.getAttribute('href')===here)a.setAttribute('aria-current','page')});
+})();
+</script>
+<div id="app">
+  <div id="cor">
+    <div id="cw"></div>
+    <div id="corHud"><div id="corYear">前 7500 万年</div><div id="corEra">远古时代</div></div>
+    <button id="pkBtn">口袋 0/24</button>
+    <button id="langBtn" title="Switch language">EN</button>
+    <div id="corBar"><div id="corFill"></div></div>
+    <div id="corHint">滚动滚轮 / 上下拖动 前进 · 点击画框走进那个时代 · 尽头有门</div>
+    <div id="corToast">这一幕还在建造中</div>
+  </div>
+
+  <div id="sc">
+    <canvas id="cv"></canvas>
+    <div id="scHud"><div id="scEra"></div><div id="scYear"></div><div id="scClock"></div></div>
+    <div id="scTop">
+      <button id="pkBtn2">口袋 0/24</button>
+      <button id="langBtn2" title="切换语言">EN</button>
+      <button id="muteBtn">♪ 音效</button>
+      <button id="backCor">回到走廊</button>
+    </div>
+    <div id="scHint">W A S D 移动 · 鼠标转视角 · 空格 拾取 · T 对话 · G 互动 / 骑乘 · F 进屋 · P 暂停 · R 倒流 · H 拍照 · M 音效</div>
+    <div id="pocketPanel"><h4>口袋 · 从各时代带回的物件</h4><div id="pkList" class="empty">还空空如也，去画里捡点什么吧。</div></div>
+    <div id="dlg">
+      <div id="dlgHead"><span id="dlgName"></span><button id="dlgX">关闭（空格）</button></div>
+      <div id="dlgLog"></div>
+      <div id="dlgInRow"><input id="dlgIn" placeholder="用中文或 English 回答…（空格关闭对话）"><button id="dlgSend">发送</button></div>
+    </div>
+    <div id="photoF"><div class="pframe"></div><div class="pcap" id="photoCap"></div><div class="pmk">TIME CORRIDOR · 拍照模式（按 H 退出）</div></div>
+  </div>
+
+  <div id="end"><div id="endBox">
+    <h2>你已抵达时间之外</h2>
+    <p id="endSub"></p>
+    <div id="endGrid"></div>
+    <button id="endClose">继续游荡</button>
+  </div></div>
+</div>
+
+<script>
+/* ================= 工具 ================= */
+var $=function(id){return document.getElementById(id)};
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function rnd(i){var s=Math.sin(i*127.1+311.7)*43758.5453;return s-Math.floor(s)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function hx(c){return[parseInt(c.substr(1,2),16),parseInt(c.substr(3,2),16),parseInt(c.substr(5,2),16)]}
+function mix(a,b,t){var A=hx(a),B=hx(b);return"rgb("+Math.round(A[0]+(B[0]-A[0])*t)+","+Math.round(A[1]+(B[1]-A[1])*t)+","+Math.round(A[2]+(B[2]-A[2])*t)+")"}
+/* 课程要求不依赖数据存储；进度只在本次访问内有效 */
+var _mem={};
+function ls(k,v){if(v===undefined)return _mem[k]===undefined?null:_mem[k];_mem[k]=v;return v}
+
+var store={items:ls("tcItems")||{},vis:ls("tcVis")||[],npcMeet:ls("tcMeet")||{},
+ qstate:ls("tcQst")||{},qrew:ls("tcRwd")||{},tcLink:ls("tcLink")||null};
+function saveStore(){/* nothing is written to disk */}
+function itemCount(){var n=0;for(var k in store.items)n+=store.items[k].length;return n}
+function updPk(){$("pkBtn").textContent=(lang=="en"?"Pocket ":"口袋 ")+itemCount()+"/24";$("pkBtn2").textContent=(lang=="en"?"Pocket ":"口袋 ")+itemCount()+"/24"}
+
+/* ================= 多语言 ================= */
+var lang=ls("tcLang")||"zh";
+var HINT_TEXT="W A S D 移动 · 鼠标转视角 · 空格 拾取 · T 对话 · G 互动 / 骑乘 · F 进屋 · P 暂停 · R 倒流 · H 拍照 · M 音效";
+function L(zh,en){return lang=="en"?en:zh}
+function t2(s){if(lang=="en"){var v=EN[s];if(v)return v}return s}
+var EN={
+/* 时代 */
+"远古时代":"Prehistoric Age","古埃及":"Ancient Egypt","古罗马":"Ancient Rome","盛唐 · 长安":"Tang Dynasty · Chang'an","今夜 · 城市":"City · Tonight","星港 · 未来":"Starport · The Future",
+"公元前 10,000 年":"10,000 BC","公元前 2560 年":"2560 BC","公元 120 年":"AD 120","公元 730 年":"AD 730","公元 2026 年":"AD 2026","公元 3021 年":"AD 3021",
+"前 7500 万年":"75 Million Years Ago",
+/* 天气 */
+"晴":"Clear","雨":"Rain","雪":"Snow","沙尘":"Sandstorm",
+/* 收集物 */
+"打制石斧":"Chipped Hand-Axe","兽骨项链":"Bone Necklace","火种石":"Fire-Striking Stone","圣甲虫护符":"Scarab Amulet","纸莎草卷":"Papyrus Scroll","磨光铜镜":"Polished Bronze Mirror","罗马铜币":"Roman Bronze Coin","陶土油灯":"Clay Oil Lamp","大理石棋子":"Marble Game Piece","开元通宝":"Kaiyuan Tongbao Coin","鎏金香囊":"Gilded Scent Pouch","三彩小马":"Sancai Pony","老式胶卷":"Old Film Roll","黑胶唱片":"Vinyl Record","旧车票":"Old Train Ticket","反重力徽章":"Anti-Gravity Badge","星图卡":"Star Chart Card","全息种子":"Holographic Seed",
+/* 屋内礼物 */
+"烤鱼干":"Dried Fish","无花果烤饼":"Fig Flatbread","一瓶葡萄酒":"A Bottle of Wine","一饼好茶":"A Cake of Fine Tea","手绘明信片":"Hand-drawn Postcard","记忆晶片":"Memory Chip",
+/* 任务物品与奖励 */
+"遗落的燧石":"The Lost Flint","神庙的青铜铃":"The Temple's Bronze Bell","散落的哲学残卷":"The Scattered Manuscript","滚落的香料袋":"The Fallen Spice Pouch","丢失的胶卷":"The Lost Film Roll","寄错年代的信":"The Misdelivered Letter",
+"猎手的祝福":"Hunter's Blessing","祭司的护身符":"Priest's Amulet","哲人的箴言卷":"Scroll of Wise Sayings","一小袋西域香料":"A Pouch of Western Spices","摄影师的样片":"Photographer's Proof Print","时间邮戳":"Time-Postmark","新石器陶珠":"Neolithic Clay Bead",
+/* NPC 名字 */
+"篝火老人":"Old Man by the Fire","采果少女":"Berry-Gathering Girl","猎手":"The Hunter","小豆":"Little Bean","书吏":"The Scribe","石匠":"The Stonemason","祭司":"The Priest","卖水人":"The Water Seller","广场商人":"The Forum Merchant","军团士兵":"Legionary","哲学家":"The Philosopher","卖花姑娘":"The Flower Girl","胡商":"The Silk-Road Merchant","卖茶姑娘":"The Tea Seller","书生":"The Scholar","更夫":"The Night Watchman","夜跑者":"The Night Runner","街头摄影师":"Street Photographer","深夜摊主":"The Midnight Cook","加班的人":"The Overtime Worker","星港向导":"Starport Guide","机器人馆员":"The Robotic Archivist","基因设计师":"Gene Designer","时间邮差":"The Time Postman",
+/* NPC 开场白 */
+"我守着这堆火四十年了，火种比命还贵。":"I have kept this fire for forty years. The ember is worth more than my life.",
+"林子深处的红果最甜，但深处分不清方向。":"The sweetest berries grow deepest in the woods — but deep in, you lose your way.",
+"今天追了一头鹿，它比我聪明。明天再试。":"Today I chased a deer. It was smarter than me. Tomorrow I will try again.",
+"你从天上来吗？你的衣服会发光！教教我！":"Did you fall from the sky? Your clothes GLOW! Teach me!",
+"莎草纸要晒足三天才能下笔。你从哪个诺姆来？":"Papyrus must dry three full days before the pen touches it. Which nome are you from?",
+"方尖碑是一整块石头，凿歪一寸就全废。":"An obelisk is one single stone. Chisel one inch crooked and it is ruined.",
+"猫走过神庙的门槛，比法老还受尊敬。":"A cat crossing the temple threshold is honored above pharaoh.",
+"陶罐里的水凉得很，一枚铜币一瓢。":"The water in my jar is cool. One copper coin, one dipper.",
+"香料、玻璃、橄榄油——罗马什么都有，只要你有银币。":"Spices, glass, olive oil — Rome has everything, if you have silver.",
+"哨位不许闲聊。……好吧，就聊一句。":"No chatting on watch duty. …Fine, just this once.",
+"美德即知识。但你先请坐，站着谈哲学伤腿。":"Virtue is knowledge. But sit down first — philosophy on your feet hurts the legs.",
+"今日的玫瑰是给维纳斯的，剩下的卖给你。":"Today's roses are for Venus. The rest are for you.",
+"波斯的香料、大食的宝石，长安什么稀罕货都见得到。":"Persian spices, Arabian gems — Chang'an has every rare thing on earth.",
+"茶要趁热，诗要趁兴。客官来一碗？":"Tea while it is hot, poetry while the mood holds. A bowl, honored guest?",
+"昨夜读《九章》，今晨看落雁——都是好文章。":"Last night I read the Nine Chapters; this morning, wild geese — both fine writing.",
+"天干物燥——小心火烛。夜里全城都听我这一嗓子。":"Dry air, open flames — beware of fire! At night the whole city hears my call.",
+"绕完第八圈了。城市的夜比白天安静，但没那么寂寞。":"Just finished lap eight. The city's night is quieter than its day, but less lonely.",
+"路灯亮起的那七分钟，是城市最诚实的时刻。":"The seven minutes when streetlights come on are the city's most honest moment.",
+"炒粉、关东煮、热豆浆——深夜的胃最诚实。":"Fried noodles, oden, hot soy milk — late-night stomachs are the most honest.",
+"刚下班。你说奇不奇怪，我居然舍不得这栋楼熄灯。":"Just got off work. Strange — I can hardly bear to watch this building go dark.",
+"欢迎来到第 7 空港。时间在这里是可折叠的。":"Welcome to Starport 7. Here, time folds like paper.",
+"我保管着人类一万年的记忆。你也想存点什么吗？":"I keep ten thousand years of human memory. Would you like to deposit something?",
+"我刚才设计了一种会发光的树。评委说太吵了。":"I just designed a tree that glows. The judges said it was too loud.",
+"我负责给过去的人送信。大多数信写的是对不起。":"I deliver letters to the past. Most of them say: I am sorry.",
+/* 屋主名字与开场白 */
+"帐篷里的老祖母":"The Elder in the Tent","泥砖屋的织工":"The Weaver of the Mud-Brick House","别墅的主人":"The Villa's Master","小院的主人":"The Keeper of the Courtyard","公寓里的插画师":"The Illustrator Upstairs","舱内的合成智能":"The Synthetic Mind in the Pod",
+"外头风大，进来坐。火边暖和。":"The wind is fierce out there. Come sit by the fire — it is warm.",
+"欢迎欢迎，刚烤的饼还热着。亚麻要纺到天黑。":"Welcome! The bread is still warm. The flax must be spun till dark.",
+"一位行脚的旅人？正好，晚宴多一副餐具。":"A traveling wanderer? Perfect — one more place at dinner.",
+"贵客临门！灶上正好温着酒。这院里的槐树比我岁数还大。":"An honored guest! Wine is warming on the stove. That locust tree is older than I am.",
+"随便坐，猫不咬人。我正给一本讲时间的书画插图。":"Sit anywhere — the cat does not bite. I am illustrating a book about time.",
+"检测到访客。我烧了一壶 22 世纪的茶——成分百分之百安全。":"Visitor detected. I have brewed 22nd-century tea — one hundred percent safe.",
+/* NPC 谈资 */
+"夜里的星星":"the stars at night","雨后的果子":"berries after the rain","清晨的兽迹":"animal tracks at dawn","追着蝴蝶到处跑":"chasing butterflies everywhere","整齐的圣书体":"neat hieroglyphs","花岗岩的心跳":"the heartbeat of granite","尼罗河的涨落":"the Nile's rise and fall","黄昏时的河风":"evening wind off the river","公共浴场":"the public baths","行军秩序":"marching order","橄榄树的影子":"the olive trees' shade","喷泉边的水声":"the sound of fountains","西市的喧闹":"the bustle of the West Market","曲江的春天":"spring at Qujiang Lake","大雪后的朱雀街":"Zhuque Street after heavy snow","打更的梆子声":"the watchman's wooden clapper","凌晨的马路":"empty roads at four in the morning","霓虹在湿地上的倒影":"neon reflected in wet asphalt","摊子亮着灯的时候":"when the stall lights glow","末班地铁的座位":"a seat on the last metro","超光速航行时的一秒":"one second of faster-than-light travel","旧书页的味道（模拟）":"the smell of old pages (simulated)","第一批开花的星光树":"the first starlight trees in bloom","收信人惊喜的表情":"the surprise on a reader's face",
+/* 委托任务 */
+"我的燧石掉进东边草丛里找不到了……你愿意帮我找找吗？":"My flint fell into the grass to the east and I cannot find it… Would you look for me?",
+"神庙的青铜铃昨夜被风吹进了沙漠……你能替我找回来吗？":"Last night the wind carried the temple's bronze bell into the desert… Can you bring it back?",
+"我的一卷手稿被风吹散了，拣回来的那卷……你能帮我找回吗？":"The wind scattered my manuscripts. The scroll that blew away… can you recover it?",
+"一袋安息香料从驼背上滚下去了……遍寻不得，客官可否帮我找找？":"A pouch of Parthian spice rolled off my camel's back… I cannot find it anywhere. Would you help?",
+"我把一卷拍完的胶卷落在喷泉边了……里面是这城市一整年的夜。":"I left a finished roll of film by the fountain… it holds a whole year of this city's nights.",
+"有一封信寄错了年代，落在了这个空港……能帮我把它找回来吗？":"One letter was misdelivered across centuries and fell here at the port… Help me retrieve it?",
+"哈！正是它！这个给你——戴着它，鹿群会绕着你走。":"Ha! That is it! Take this — wear it, and the deer herds will not flee from you.",
+"巴斯特别的保佑你。这枚护身符，猫见了都会对你打招呼。":"May Bastet keep you. With this amulet, even cats will greet you.",
+"「认识你自己。」——这卷送你，比银币值钱。":"'Know thyself.' — This scroll is yours. It is worth more than silver.",
+"多谢客官！这袋香料你拿着——长安城里闻不到这个味儿。":"My thanks, honored guest! Keep this spice — no shop in Chang'an sells this scent.",
+"冲出来了！这张——路灯下的人是你吧？送你。":"Developed! This one — is that you under the streetlight? Keep it.",
+"找到了！盖个邮戳给你——凭它，邮局欠你一次免费穿越。":"Found it! Here — a postmark for you. With it, the Post Office owes you one free journey.",
+/* 动物 */
+"小鹿":"Fawn","成年鹿":"Red Deer","半驯的狼":"Half-Tamed Wolf","神庙的猫":"Temple Cat","晒太阳的猫":"Sunbathing Cat","商队的骆驼":"Caravan Camel","看摊的狗":"Market Dog","广场鸽":"Forum Pigeon","西班牙战马":"Spanish Warhorse","驮货的马":"Packhorse","池边的鹤":"Crane by the Pond","茶摊的猫":"Teahouse Cat","遛弯的柴犬":"Strolling Shiba","便利店猫":"Corner-Shop Cat","伴游浮宠":"Companion Drone","馆员的分身":"Archivist's Echo","基因复原的猫":"Revived Cat",
+/* 房屋 */
+"部落的帐篷":"The Tribe's Tent","泥砖屋":"Mud-Brick House","白色别墅":"The White Villa","临街小院":"The Courtyard House","亮灯的公寓":"The Lit-Up Flat","观光舱":"The Viewing Pod",
+"时光土堆":"Mound of Time","翻新的土坑":"The Re-dug Pit",
+/* 进屋留言 */
+"墙上刻着一行小字：「时间不载人，人载时间。」":"Carved in the wall: 'Time carries no one; people carry time.'",
+"墙上有一行陌生的字迹：「我也来过。—— 1087 年的旅人」":"'I was here too. — a traveler from the year 1087'",
+"墙角刻着：「如果你读到了这行字，说明门一直开着。」":"'If you can read this, the door is still open.'",
+"墙上写着：「别急，先把这杯茶喝完。」":"'Do not rush. Finish your tea first.'",
+"墙上刻着：「下一扇门后，替我看一眼海。」":"'Behind the next door, look at the sea for me.'"};
+var ERA_LORE_EN={
+pre:"We knap flint along its grain, keep embers alive all night, and follow the deer south when winter comes.",
+egy:"The Nile floods once a year and leaves the best soil; cats are gods; pyramid stones come by sledge along the river.",
+rome:"Roads run straight to Rome; the baths are where the city talks; fifty thousand leave the Colosseum in a quarter hour.",
+tang:"One hundred and eight wards; a drum closes the gates at curfew; bread, wine and pipa all came down the Silk Road.",
+now:"The city runs on coffee by day and streetlights by night; the last metro is its gentlest hour.",
+fut:"Sixteen sunrises a day up here; a backup of memory is not me; the Time Post Office sells punctuality, not speed."};
+
+/* ================= 剪影画笔库 =================
+   约定：x=脚底中心屏幕x, y=脚底屏幕y, s=比例, c=颜色, t=秒, dl=日光0..1 */
+function person(ctx,x,y,s,c,pose,t,opt){
+ opt=opt||{};
+ var dl=opt.dl!==undefined?opt.dl:1;
+ var skin=opt.skin||"#C99873";
+ var robe=opt.robe||c;
+ var sw=Math.sin(t*6+x*0.7)*4.5*s;
+ /* 脚下影子，随太阳方向偏移 */
+ if(dl>0.05){var sunX=Math.cos((dayPhase%1)*Math.PI*2-Math.PI/2);
+  ctx.save();ctx.globalAlpha=0.26*dl;ctx.fillStyle="#000";
+  ctx.beginPath();ctx.ellipse(x-sunX*3.5*s,y,7*s,1.9*s,0,0,7);ctx.fill();ctx.restore()}
+ /* 腿 */
+ ctx.strokeStyle=c;ctx.lineWidth=2.2*s;ctx.lineCap="round";
+ ctx.beginPath();
+ if(pose=="walk"||pose=="dance"){ctx.moveTo(x,y-5*s);ctx.lineTo(x-sw,y);ctx.moveTo(x,y-5*s);ctx.lineTo(x+sw,y);}
+ else{ctx.moveTo(x,y-5*s);ctx.lineTo(x-2.5*s,y);ctx.moveTo(x,y-5*s);ctx.lineTo(x+2.5*s,y);}
+ ctx.stroke();
+ /* 袍身 */
+ ctx.fillStyle=robe;
+ ctx.beginPath();ctx.moveTo(x-3.6*s,y-4*s);ctx.lineTo(x+3.6*s,y-4*s);ctx.lineTo(x+2.4*s,y-12*s);ctx.lineTo(x-2.4*s,y-12*s);ctx.closePath();ctx.fill();
+ /* 手臂 */
+ ctx.strokeStyle=robe;ctx.lineWidth=1.9*s;
+ ctx.beginPath();
+ if(pose=="dance"){ctx.moveTo(x,y-11*s);ctx.lineTo(x-6*s,y-17*s);ctx.moveTo(x,y-11*s);ctx.lineTo(x+6*s,y-17*s);}
+ else if(pose=="walk"){ctx.moveTo(x,y-11*s);ctx.lineTo(x-sw*0.8,y-7*s);ctx.moveTo(x,y-11*s);ctx.lineTo(x+sw*0.8,y-7*s);}
+ else{ctx.moveTo(x,y-11*s);ctx.lineTo(x-3*s,y-6.5*s);ctx.moveTo(x,y-11*s);ctx.lineTo(x+3*s,y-6.5*s);}
+ ctx.stroke();
+ /* 头 */
+ ctx.fillStyle=skin;ctx.beginPath();ctx.arc(x,y-14.8*s,3.1*s,0,7);ctx.fill();
+ /* 表情：眼睛+嘴 */
+ if(3.1*s>2.2){
+  ctx.fillStyle="#33241A";
+  var bl=(Math.sin(t*1.3+x*3)>0.96)?0.25:1; /* 偶尔眨眼 */
+  ctx.beginPath();ctx.ellipse(x-1.1*s,y-15.2*s,0.5*s,0.5*s*bl,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+1.1*s,y-15.2*s,0.5*s,0.5*s*bl,0,0,7);ctx.fill();
+  ctx.strokeStyle="#8A5A3C";ctx.lineWidth=0.7*s;ctx.beginPath();
+  var face=opt.face||"calm";
+  if(face=="smile")ctx.arc(x,y-14*s,1.2*s,0.2*Math.PI,0.8*Math.PI);
+  else if(face=="sad")ctx.arc(x,y-13.2*s,1.2*s,1.2*Math.PI,1.8*Math.PI);
+  else if(face=="wow"){ctx.moveTo(x,y-14.6*s);ctx.lineTo(x,y-13.4*s);}
+  else{ctx.moveTo(x-0.9*s,y-13.8*s);ctx.lineTo(x+0.9*s,y-13.8*s);}
+  ctx.stroke();
+ }
+ /* 帽/头饰 */
+ var hat=opt.hat;
+ if(hat=="straw"){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-5*s,y-16.4*s);ctx.lineTo(x,y-21*s);ctx.lineTo(x+5*s,y-16.4*s);ctx.closePath();ctx.fill();ctx.fillRect(x-5.6*s,y-17*s,11.2*s,1.3*s)}
+ else if(hat=="nemes"){ctx.fillStyle=c;ctx.fillRect(x-3.9*s,y-18.8*s,7.8*s,5.2*s);ctx.fillStyle="#FAC775";ctx.fillRect(x-1*s,y-16.4*s,2*s,2.6*s)}
+ else if(hat=="helmet"){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y-15.4*s,3.7*s,Math.PI,0);ctx.fill();ctx.fillRect(x-3.7*s,y-15.6*s,7.4*s,1.6*s);ctx.fillStyle="#FAC775";ctx.fillRect(x+3.1*s,y-19.4*s,1.2*s,4.2*s)}
+ else if(hat=="futou"){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y-16.2*s,3.5*s,Math.PI,0);ctx.fill();ctx.fillRect(x-4.2*s,y-16.7*s,8.4*s,1.3*s)}
+ else if(hat=="hood"){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y-15.4*s,3.9*s,Math.PI*0.95,Math.PI*0.05);ctx.fill()}
+ else if(hat=="cap"){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y-16.6*s,3.3*s,Math.PI,0);ctx.fill();ctx.fillRect(x-0.4*s,y-19.8*s,3.8*s,1.3*s)}
+ else if(hat=="antenna"){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y-16*s,3.5*s,0,7);ctx.fill();ctx.strokeStyle="#7fe7ff";ctx.lineWidth=1.2*s;ctx.beginPath();ctx.moveTo(x,y-19.5*s);ctx.lineTo(x+2.2*s,y-23*s);ctx.stroke();ctx.fillStyle="#7fe7ff";ctx.beginPath();ctx.arc(x+2.2*s,y-23*s,1.4*s,0,7);ctx.fill()}
+ /* 手持物 */
+ var hold=opt.hold;
+ if(hold=="staff"){ctx.strokeStyle=c;ctx.lineWidth=1.7*s;ctx.beginPath();ctx.moveTo(x+4.2*s,y);ctx.lineTo(x+4.2*s,y-20*s);ctx.stroke()}
+ else if(hold=="spear"){ctx.strokeStyle=c;ctx.lineWidth=1.7*s;ctx.beginPath();ctx.moveTo(x+4.4*s,y);ctx.lineTo(x+4.4*s,y-24*s);ctx.stroke();ctx.fillStyle="#FAC775";ctx.beginPath();ctx.moveTo(x+4.4*s,y-24*s);ctx.lineTo(x+3.4*s,y-28.5*s);ctx.lineTo(x+5.4*s,y-24*s);ctx.closePath();ctx.fill()}
+ else if(hold=="basket"){ctx.strokeStyle=c;ctx.lineWidth=1.5*s;ctx.beginPath();ctx.arc(x-4.8*s,y-8*s,2.7*s,0,7);ctx.stroke()}
+ else if(hold=="scroll"){ctx.strokeStyle="#E8D9A8";ctx.lineWidth=2.2*s;ctx.beginPath();ctx.moveTo(x+3*s,y-10*s);ctx.lineTo(x+7.5*s,y-12*s);ctx.stroke()}
+ else if(hold=="camera"){ctx.fillStyle="#222831";ctx.fillRect(x+2.6*s,y-12.4*s,3.6*s,2.6*s);ctx.fillStyle="#7fe7ff";ctx.fillRect(x+3.3*s,y-11.7*s,2.2*s,1.4*s)}
+ else if(hold=="tablet"){ctx.fillStyle="#222831";ctx.fillRect(x+2.6*s,y-12*s,2.8*s,4.2*s);ctx.strokeStyle="#7fe7ff";ctx.lineWidth=0.8*s;ctx.strokeRect(x+2.6*s,y-12*s,2.8*s,4.2*s)}
+}
+var P={
+tent:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-14*s,y);ctx.lineTo(x,y-20*s);ctx.lineTo(x+14*s,y);ctx.closePath();ctx.fill()},
+hut:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-12*s,y-13*s,24*s,13*s);ctx.beginPath();ctx.moveTo(x-16*s,y-11*s);ctx.lineTo(x,y-25*s);ctx.lineTo(x+16*s,y-11*s);ctx.closePath();ctx.fill()},
+fire:function(ctx,x,y,s,c,t){ctx.strokeStyle="#5F5E5A";ctx.lineWidth=1.6*s;ctx.beginPath();ctx.moveTo(x-6*s,y);ctx.lineTo(x+6*s,y-3*s);ctx.moveTo(x-6*s,y-3*s);ctx.lineTo(x+6*s,y);ctx.stroke();
+ var r=(5+Math.sin(t*8+x)*1.5)*s;ctx.save();ctx.globalAlpha*=0.18;ctx.fillStyle="#F0997B";ctx.beginPath();ctx.arc(x,y-5*s,r*2.8,0,7);ctx.fill();ctx.restore();
+ ctx.fillStyle="#D85A30";ctx.beginPath();ctx.arc(x,y-4*s,r,0,7);ctx.fill()},
+menhir:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-5*s,y-34*s,10*s,34*s);ctx.fillRect(x+9*s,y-18*s,7*s,18*s)},
+fernT:function(ctx,x,y,s,c){ctx.strokeStyle=c;ctx.lineWidth=2.4*s;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+3*s,y-18*s,x-1*s,y-30*s);ctx.stroke();
+ ctx.lineWidth=1.6*s;for(var i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(x-1*s,y-30*s);ctx.quadraticCurveTo(x-1*s+i*9*s,y-38*s,x-1*s+i*14*s,y-30*s+Math.abs(i)*4*s);ctx.stroke()}},
+dino:function(ctx,x,y,s,c,t){var sw=Math.sin(t*3+x)*2*s;ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=2.4*s;ctx.lineCap="round";
+ ctx.beginPath();ctx.moveTo(x-8*s,y-9*s);ctx.lineTo(x-9*s+sw,y);ctx.moveTo(x+4*s,y-9*s);ctx.lineTo(x+3*s-sw,y);ctx.stroke();
+ ctx.beginPath();ctx.ellipse(x,y-14*s,14*s,6.5*s,0,0,7);ctx.fill();
+ ctx.lineWidth=4.5*s;ctx.beginPath();ctx.moveTo(x+10*s,y-16*s);ctx.lineTo(x+19*s,y-34*s);ctx.stroke();
+ ctx.beginPath();ctx.ellipse(x+20.5*s,y-36*s,4*s,2.8*s,0.4,0,7);ctx.fill();
+ ctx.lineWidth=2.8*s;ctx.beginPath();ctx.moveTo(x-12*s,y-15*s);ctx.lineTo(x-24*s,y-22*s);ctx.stroke()},
+palm:function(ctx,x,y,s,c){ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=2.6*s;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+4*s,y-16*s,x+1*s,y-30*s);ctx.stroke();
+ ctx.lineWidth=1.8*s;for(var i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(x+1*s,y-30*s);ctx.quadraticCurveTo(x+1*s+i*8*s,y-36*s,x+1*s+i*13*s,y-31*s);ctx.stroke()}},
+obelisk:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-4*s,y-36*s,8*s,36*s);ctx.beginPath();ctx.moveTo(x-4*s,y-36*s);ctx.lineTo(x,y-43*s);ctx.lineTo(x+4*s,y-36*s);ctx.closePath();ctx.fill()},
+pyramid:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-32*s,y);ctx.lineTo(x,y-44*s);ctx.lineTo(x+32*s,y);ctx.closePath();ctx.fill()},
+colonnade:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-34*s,y-5*s,68*s,5*s);ctx.fillRect(x-30*s,y-30*s,60*s,5*s);
+ for(var i=0;i<6;i++)ctx.fillRect(x-27*s+i*11*s,y-28*s,5*s,23*s)},
+arch:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-16*s,y-26*s,8*s,26*s);ctx.fillRect(x+8*s,y-26*s,8*s,26*s);
+ ctx.beginPath();ctx.arc(x,y-26*s,16*s,Math.PI,0);ctx.fill();ctx.fillRect(x-16*s,y-32*s,32*s,6*s)},
+colosseum:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-32*s,y);ctx.lineTo(x-32*s,y-30*s);ctx.quadraticCurveTo(x,y-47*s,x+32*s,y-30*s);ctx.lineTo(x+32*s,y);ctx.closePath();ctx.fill();
+ ctx.save();ctx.globalAlpha*=0.55;ctx.fillStyle="#14100C";for(var r2=0;r2<2;r2++)for(var i=0;i<5;i++)ctx.fillRect(x-23*s+i*10*s,y-11*s-r2*13*s,5*s,7*s);ctx.restore()},
+cyp:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y-17*s,5*s,17*s,0,0,7);ctx.fill()},
+pagoda:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-9*s,y-30*s,18*s,30*s);
+ var lv=[[-15,28,38],[-12,40,49],[-8,51,59]];for(var i=0;i<3;i++){var v=lv[i];ctx.beginPath();ctx.moveTo(x-v[0]*s,y-v[1]*s);ctx.lineTo(x,y-v[2]*s);ctx.lineTo(x+v[0]*s,y-v[1]*s);ctx.closePath();ctx.fill()}
+ ctx.fillRect(x-1*s,y-66*s,2*s,8*s)},
+towerCN:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-9*s,y-34*s,18*s,34*s);ctx.beginPath();ctx.moveTo(x-16*s,y-32*s);ctx.lineTo(x,y-44*s);ctx.lineTo(x+16*s,y-32*s);ctx.closePath();ctx.fill()},
+gate:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-26*s,y-24*s,52*s,24*s);for(var i=0;i<5;i++)ctx.fillRect(x-26*s+i*11*s,y-28*s,6*s,4*s);
+ ctx.save();ctx.globalAlpha*=0.85;ctx.fillStyle="#120E0A";ctx.fillRect(x-7*s,y-14*s,14*s,14*s);ctx.beginPath();ctx.arc(x,y-14*s,7*s,Math.PI,0);ctx.fill();ctx.restore()},
+wallRun:function(ctx,x,y,s,c){ctx.fillStyle=c;for(var i=0;i<6;i++)ctx.fillRect(x+i*24*s,y-17*s,17*s,17*s)},
+houseCN:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-13*s,y-13*s,26*s,13*s);ctx.beginPath();ctx.moveTo(x-18*s,y-11*s);ctx.lineTo(x,y-23*s);ctx.lineTo(x+18*s,y-11*s);ctx.closePath();ctx.fill()},
+lantern:function(ctx,x,y,s,c,t,dl){ctx.strokeStyle=c;ctx.lineWidth=1.6*s;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-30*s);ctx.stroke();
+ if(dl<0.55){ctx.save();ctx.globalAlpha*=0.3;ctx.fillStyle="#F0997B";ctx.beginPath();ctx.arc(x,y-34*s,12*s,0,7);ctx.fill();ctx.restore();
+  ctx.fillStyle="#F0997B";ctx.beginPath();ctx.ellipse(x,y-34*s,4.5*s,5.5*s,0,0,7);ctx.fill()}
+ else{ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y-34*s,4.5*s,5.5*s,0,0,7);ctx.fill()}},
+bldg:function(ctx,x,y,s,c,t,dl,seed){ctx.fillStyle=c;ctx.fillRect(x-12*s,y-52*s,24*s,52*s);ctx.fillRect(x-0.8*s,y-60*s,1.6*s,8*s);
+ var lit=dl<0.45;ctx.fillStyle=lit?"#FAC775":"#14100C";ctx.save();ctx.globalAlpha*=lit?0.85:0.4;
+ for(var r2=0;r2<4;r2++)for(var cc=0;cc<2;cc++){if(rnd(seed*7+r2*2+cc)>(lit?0.4:0.3))ctx.fillRect(x-8*s+cc*9*s,y-46*s+r2*11*s,5*s,6*s)}ctx.restore()},
+tvTower:function(ctx,x,y,s,c){ctx.strokeStyle=c;ctx.lineWidth=3*s;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-58*s);ctx.stroke();
+ ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y-40*s,7*s,9*s,0,0,7);ctx.fill();
+ ctx.lineWidth=1.4*s;ctx.beginPath();ctx.moveTo(x,y-58*s);ctx.lineTo(x,y-70*s);ctx.stroke()},
+lamp:function(ctx,x,y,s,c,t,dl){ctx.strokeStyle=c;ctx.lineWidth=2*s;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-34*s);ctx.lineTo(x+7*s,y-36*s);ctx.stroke();
+ if(dl<0.5){ctx.save();ctx.globalAlpha*=0.3;ctx.fillStyle="#FAC775";ctx.beginPath();ctx.arc(x+7*s,y-38*s,12*s,0,7);ctx.fill();ctx.restore();
+  ctx.fillStyle="#FAC775";ctx.beginPath();ctx.arc(x+7*s,y-38*s,3.2*s,0,7);ctx.fill()}
+ else{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x+7*s,y-38*s,3*s,0,7);ctx.fill()}},
+spire:function(ctx,x,y,s,c,dl,seed){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-9*s,y);ctx.lineTo(x-3*s,y-64*s);ctx.lineTo(x+3*s,y-64*s);ctx.lineTo(x+9*s,y);ctx.closePath();ctx.fill();
+ var pu=0.5+0.5*Math.sin(seed*3+performance.now()/500);ctx.fillStyle="rgba(127,231,255,"+(0.5+0.4*pu)+")";ctx.beginPath();ctx.arc(x,y-66*s,3*s,0,7);ctx.fill()},
+ringPortal:function(ctx,x,y,s,c,t,dl){var pu=0.6+0.4*Math.sin(t*1.5);ctx.strokeStyle="rgba(127,231,255,"+(0.5*pu+0.2)+")";ctx.lineWidth=2.4*s;
+ ctx.beginPath();ctx.ellipse(x,y-40*s,26*s,40*s,0,0,7);ctx.stroke();
+ ctx.save();ctx.globalAlpha*=0.12*pu;ctx.fillStyle="#7fe7ff";ctx.beginPath();ctx.ellipse(x,y-40*s,26*s,40*s,0,0,7);ctx.fill();ctx.restore()},
+dancer:function(ctx,x,y,s,c,t){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-7*s,y);ctx.lineTo(x,y-9*s);ctx.lineTo(x+7*s,y);ctx.closePath();ctx.fill();person(ctx,x,y-2*s,s,c,"dance",t)},
+mudhouse:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-16*s,y-18*s,32*s,18*s);ctx.fillRect(x-18*s,y-20*s,36*s,3*s);
+ ctx.save();ctx.globalAlpha*=0.8;ctx.fillStyle="#171008";ctx.fillRect(x-4*s,y-12*s,8*s,12*s);
+ ctx.fillStyle="#171008";ctx.fillRect(x+8*s,y-14*s,4*s,4*s);ctx.restore()},
+villa:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-18*s,y-16*s,36*s,16*s);
+ ctx.fillStyle="#8C3B22";ctx.beginPath();ctx.moveTo(x-20*s,y-16*s);ctx.lineTo(x,y-26*s);ctx.lineTo(x+20*s,y-16*s);ctx.closePath();ctx.fill();
+ ctx.save();ctx.globalAlpha*=0.8;ctx.fillStyle="#171512";ctx.fillRect(x-4*s,y-11*s,8*s,11*s);ctx.restore()},
+pod:function(ctx,x,y,s,c,t){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-16*s,y);ctx.lineTo(x-16*s,y-12*s);ctx.quadraticCurveTo(x,y-26*s,x+16*s,y-12*s);ctx.lineTo(x+16*s,y);ctx.closePath();ctx.fill();
+ var pu=0.5+0.4*Math.sin(t*2.4);ctx.save();ctx.globalAlpha=pu;ctx.fillStyle="#7fe7ff";ctx.beginPath();ctx.ellipse(x,y-9*s,4.6*s,8.4*s,0,0,7);ctx.fill();ctx.restore()},
+rock:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y-3*s,7*s,4*s,0,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(x+5*s,y-1.5*s,4*s,2.5*s,0,0,7);ctx.fill()},
+bush:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x-3*s,y-3*s,4*s,0,7);ctx.arc(x+3*s,y-3.5*s,4.5*s,0,7);ctx.arc(x,y-5.5*s,4*s,0,7);ctx.fill()},
+stall:function(ctx,x,y,s,c,t){ctx.strokeStyle=c;ctx.lineWidth=1.8*s;ctx.beginPath();ctx.moveTo(x-10*s,y);ctx.lineTo(x-10*s,y-14*s);ctx.moveTo(x+10*s,y);ctx.lineTo(x+10*s,y-14*s);ctx.stroke();
+ ctx.fillStyle=c;ctx.fillRect(x-13*s,y-18*s,26*s,3.5*s);
+ ctx.fillStyle=mix(c,"#FAC775",0.4);ctx.fillRect(x-7*s,y-8*s,6*s,4*s);ctx.beginPath();ctx.arc(x+5*s,y-6*s,2.5*s,0,7);ctx.fill()},
+cart:function(ctx,x,y,s,c){ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=1.6*s;
+ ctx.beginPath();ctx.arc(x-6*s,y-2.5*s,2.5*s,0,7);ctx.fill();ctx.beginPath();ctx.arc(x+5*s,y-2.5*s,2.5*s,0,7);ctx.fill();
+ ctx.fillRect(x-9*s,y-9*s,16*s,5*s);
+ ctx.beginPath();ctx.moveTo(x-9*s,y-7*s);ctx.lineTo(x-15*s,y-2*s);ctx.stroke()},
+statue:function(ctx,x,y,s,c,t){ctx.fillStyle=c;ctx.fillRect(x-6*s,y-4*s,12*s,4*s);person(ctx,x,y-4*s,s*0.95,c,"stand",t)},
+fountain:function(ctx,x,y,s,c,t){ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,9*s,3*s,0,0,7);ctx.fill();ctx.fillRect(x-2*s,y-10*s,4*s,10*s);
+ ctx.strokeStyle="rgba(180,220,255,.55)";ctx.lineWidth=1.2*s;
+ var hh=(4+Math.sin(t*5+x)*1)*s;
+ ctx.beginPath();ctx.moveTo(x,y-10*s);ctx.quadraticCurveTo(x+3*s,y-10*s-hh,x+5*s,y-6*s);
+ ctx.moveTo(x,y-10*s);ctx.quadraticCurveTo(x-3*s,y-10*s-hh,x-5*s,y-6*s);ctx.stroke()},
+bench:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-7*s,y-6*s,14*s,2*s);ctx.fillRect(x-6*s,y-4*s,2*s,4*s);ctx.fillRect(x+4*s,y-4*s,2*s,4*s)},
+signboard:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-1.2*s,y-16*s,2.4*s,16*s);ctx.fillRect(x-6*s,y-23*s,12*s,7*s);
+ ctx.save();ctx.globalAlpha*=0.7;ctx.fillStyle="#0B0B12";ctx.fillRect(x-4*s,y-21*s,8*s,3*s);ctx.restore()},
+pond:function(ctx,x,y,s,c,t){ctx.fillStyle=mix(c,"#3E6C8C",0.5);ctx.beginPath();ctx.ellipse(x,y,10*s,3*s,0,0,7);ctx.fill();
+ var r=(1+Math.sin(t*2+x)*0.4)*s;ctx.strokeStyle="rgba(255,255,255,.3)";ctx.lineWidth=1;
+ ctx.beginPath();ctx.ellipse(x,y,4*s+r,1.4*s+r*0.4,0,0,7);ctx.stroke()},
+crate:function(ctx,x,y,s,c){ctx.fillStyle=c;ctx.fillRect(x-5*s,y-8*s,10*s,8*s);
+ ctx.strokeStyle="#0B0B12";ctx.lineWidth=1.2*s;ctx.strokeRect(x-5*s,y-8*s,10*s,8*s);
+ ctx.beginPath();ctx.moveTo(x-5*s,y-8*s);ctx.lineTo(x+5*s,y);ctx.moveTo(x+5*s,y-8*s);ctx.lineTo(x-5*s,y);ctx.stroke()}
+};
+
+/* ================= 动物画笔 ================= */
+function quad(ctx,x,y,s,c,t,opt){
+ opt=opt||{};
+ var sw=Math.sin(t*5+x)*1.8*s,dl=opt.dl!==undefined?opt.dl:1;
+ if(dl>0.05){var sunX=Math.cos((dayPhase%1)*Math.PI*2-Math.PI/2);
+  ctx.save();ctx.globalAlpha=0.22*dl;ctx.fillStyle="#000";
+  ctx.beginPath();ctx.ellipse(x-sunX*3*s,y,7.5*s,1.8*s,0,0,7);ctx.fill();ctx.restore()}
+ ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=1.7*s;ctx.lineCap="round";
+ ctx.beginPath();
+ ctx.moveTo(x-4.5*s,y-6*s);ctx.lineTo(x-4.5*s+sw,y);ctx.moveTo(x-2.5*s,y-6*s);ctx.lineTo(x-2.5*s-sw,y);
+ ctx.moveTo(x+2.5*s,y-6*s);ctx.lineTo(x+2.5*s+sw,y);ctx.moveTo(x+4.5*s,y-6*s);ctx.lineTo(x+4.5*s-sw,y);
+ ctx.stroke();
+ ctx.beginPath();ctx.ellipse(x,y-8*s,5.5*s,2.6*s,0,0,7);ctx.fill();
+ if(opt.neck){ctx.lineWidth=2.2*s;ctx.beginPath();ctx.moveTo(x+4.8*s,y-8.5*s);ctx.lineTo(x+6.5*s,y-11*s-(opt.neck-2)*s);ctx.stroke()}
+ ctx.beginPath();ctx.arc(x+6.5*s,y-11*s-(opt.neck||0)*s,2.3*s,0,7);ctx.fill();
+ if(opt.tailup){ctx.beginPath();ctx.moveTo(x-5.5*s,y-9*s);ctx.quadraticCurveTo(x-8*s,y-13*s+Math.sin(t*6)*1.2*s,x-7*s,y-14.5*s);ctx.stroke()}
+ else{ctx.beginPath();ctx.moveTo(x-5.5*s,y-8*s);ctx.quadraticCurveTo(x-8*s,y-9*s+Math.sin(t*7)*1.5*s,x-8.5*s,y-5.5*s);ctx.stroke()}
+ if(opt.humps){ctx.beginPath();ctx.ellipse(x-2*s,y-11.5*s,2.6*s,2*s,0,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(x+2.5*s,y-11.5*s,2.6*s,2*s,0,0,7);ctx.fill()}
+ if(opt.antlers){ctx.lineWidth=1.4*s;for(var i=-1;i<=1;i+=2){ctx.beginPath();ctx.moveTo(x+6.5*s,y-13.5*s);ctx.lineTo(x+6.5*s+i*2.5*s,y-17.5*s);ctx.moveTo(x+6.5*s+i*1.5*s,y-15.5*s);ctx.lineTo(x+6.5*s+i*3.5*s,y-16*s);ctx.stroke()}}
+ if(opt.ears){ctx.beginPath();ctx.moveTo(x+5.4*s,y-13*s);ctx.lineTo(x+4.6*s,y-15.4*s);ctx.moveTo(x+7.6*s,y-13*s);ctx.lineTo(x+8.4*s,y-15.4*s);ctx.stroke()}
+ if(opt.beak){ctx.fillStyle="#D8892B";ctx.beginPath();ctx.moveTo(x+8.6*s,y-11.5*s-(opt.neck||0)*s+2.5*s);ctx.lineTo(x+11*s,y-11*s-(opt.neck||0)*s+2.5*s);ctx.lineTo(x+8.6*s,y-10.5*s-(opt.neck||0)*s+2.5*s);ctx.closePath();ctx.fill()}
+}
+var ANIMALS={
+deer:function(ctx,x,y,s,c,t,dl){quad(ctx,x,y,s,c,t,{dl:dl,antlers:1,neck:3})},
+dog:function(ctx,x,y,s,c,t,dl){quad(ctx,x,y,s,c,t,{dl:dl,ears:1})},
+cat:function(ctx,x,y,s,c,t,dl){quad(ctx,x,y*0.92,s*0.85,c,t,{dl:dl,ears:1,tailup:1})},
+camel:function(ctx,x,y,s,c,t,dl){quad(ctx,x,y,s*1.35,c,t,{dl:dl,humps:1,neck:5})},
+crane:function(ctx,x,y,s,c,t,dl){quad(ctx,x,y*0.95,s,c,t,{dl:dl,neck:6,tailup:1});
+ ctx.fillStyle="#D8892B";ctx.beginPath();ctx.moveTo(x+6.5*s,y-16.5*s);ctx.lineTo(x+9*s,y-15.8*s);ctx.lineTo(x+6.5*s,y-15.3*s);ctx.closePath();ctx.fill()},
+horse:function(ctx,x,y,s,c,t,dl){quad(ctx,x,y,s*1.25,c,t,{dl:dl,neck:4})},
+pigeon:function(ctx,x,y,s,c,t,dl){
+ ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y-3*s,3*s,2*s,0,0,7);ctx.fill();
+ ctx.beginPath();ctx.arc(x+2.6*s,y-5*s,1.4*s,0,7);ctx.fill();
+ var pk=Math.sin(t*3+x)>0.7;
+ ctx.fillStyle="#D8892B";ctx.beginPath();ctx.moveTo(x+3.8*s,y-5*s+(pk?1.2*s:0));ctx.lineTo(x+5.2*s,y-4.6*s+(pk?1.2*s:0));ctx.lineTo(x+3.8*s,y-4.4*s+(pk?1.2*s:0));ctx.closePath();ctx.fill();
+ var fl=Math.sin(t*7+x);
+ if(fl>0.6){ctx.strokeStyle=c;ctx.lineWidth=1.2*s;ctx.beginPath();ctx.moveTo(x-1*s,y-4*s);ctx.lineTo(x-4*s,y-6*s);ctx.moveTo(x+1*s,y-4*s);ctx.lineTo(x+3.4*s,y-6*s);ctx.stroke()}},
+robo:function(ctx,x,y,s,c,t,dl){
+ var fl=Math.sin(t*2+x)*2.5*s;
+ ctx.strokeStyle="#7fe7ff";ctx.lineWidth=1.6*s;ctx.beginPath();ctx.arc(x,y-10*s+fl,5*s,0,7);ctx.stroke();
+ ctx.fillStyle="rgba(127,231,255,"+(0.2+0.12*Math.sin(t*3))+")";ctx.beginPath();ctx.arc(x,y-10*s+fl,5*s,0,7);ctx.fill();
+ ctx.fillStyle="#7fe7ff";ctx.beginPath();ctx.arc(x-1.6*s,y-10.5*s+fl,1.1*s,0,7);ctx.fill();ctx.beginPath();ctx.arc(x+1.6*s,y-10.5*s+fl,1.1*s,0,7);ctx.fill()}};
+var hearts=[];
+function spawnHearts(sx,sy){for(var i=0;i<5;i++)hearts.push({x:sx+(Math.random()*18-9),y:sy-10,t:0,d:0.9+Math.random()*0.5})}
+
+/* ================= 音效引擎（Web Audio，无音频文件） ================= */
+var AC=null,muted=false,windGain=null,rainGain=null,ambOn=false;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+ if(AC&&AC.state=="suspended")AC.resume();return AC}
+function noiseBuf(a,sec){var b=a.createBuffer(1,a.sampleRate*sec,a.sampleRate),d=b.getChannelData(0);
+ for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b}
+function startAmbient(){
+ var a=ac();if(!a||ambOn)return;ambOn=true;
+ var w=a.createBufferSource();w.buffer=noiseBuf(a,2.5);w.loop=true;
+ var wf=a.createBiquadFilter();wf.type="lowpass";wf.frequency.value=380;
+ windGain=a.createGain();windGain.gain.value=0.02;
+ w.connect(wf);wf.connect(windGain);windGain.connect(a.destination);w.start();
+ var r=a.createBufferSource();r.buffer=noiseBuf(a,2.5);r.loop=true;
+ var rf=a.createBiquadFilter();rf.type="highpass";rf.frequency.value=2200;
+ rainGain=a.createGain();rainGain.gain.value=0;
+ r.connect(rf);rf.connect(rainGain);rainGain.connect(a.destination);r.start();
+}
+function chime(f,dur,type,vol){
+ var a=ac();if(!a||muted)return;
+ var o=a.createOscillator(),g=a.createGain();
+ o.type=type||"sine";o.frequency.value=f;
+ g.gain.setValueAtTime(vol||0.07,a.currentTime);
+ g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+(dur||0.4));
+ o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+(dur||0.4))}
+function sfxPickup(){chime(880,0.22,"sine",0.05);setTimeout(function(){chime(1318,0.3,"sine",0.04)},90)}
+function sfxPet(){chime(660,0.14,"triangle",0.045);setTimeout(function(){chime(880,0.16,"triangle",0.04)},80)}
+function sfxDoor(){chime(150,0.28,"sawtooth",0.035);setTimeout(function(){chime(120,0.22,"sawtooth",0.03)},120)}
+function sfxQuest(){chime(523,0.2,"sine",0.05);setTimeout(function(){chime(659,0.2,"sine",0.05)},140);setTimeout(function(){chime(784,0.35,"sine",0.05)},280)}
+function sfxDig(){chime(90,0.3,"sawtooth",0.05)}
+$("muteBtn").addEventListener("click",function(){muted=!muted;
+ this.textContent=muted?L("♪ 已静音","♪ Muted"):L("♪ 音效","♪ Sound");
+ if(windGain)windGain.gain.value=muted?0:0.02;if(rainGain)rainGain.gain.value=muted?0:(weather=="rain"?0.03:0)});
+
+/* ================= 天气系统 ================= */
+var weather="clear",drops=[],flakes=[];
+for(var dw=0;dw<90;dw++)drops.push({x:Math.random(),y:Math.random(),v:0.55+Math.random()*0.35,l:0.02+Math.random()*0.02});
+for(var fw=0;fw<70;fw++)flakes.push({x:Math.random(),y:Math.random(),v:0.03+Math.random()*0.05,ph:Math.random()*7,s:1+Math.random()*1.6});
+var WEATHERS={pre:["clear","clear","rain"],egy:["clear","clear","sand"],rome:["clear","clear","rain"],
+ tang:["clear","clear","rain","snow"],now:["clear","clear","rain"],fut:["clear","clear","snow"]};
+var WEATHER_NAME={clear:"晴",rain:"雨",snow:"雪",sand:"沙尘"};
+
+/* ================= 时代知识库（NPC 谈资） ================= */
+var ERA_LORE={
+pre:["我们把打制的石斧叫「手斧」，砸石片得顺着石头的纹理走。","火种藏在干苔藓里，一整晚都不能让它灭。","冬天来了，部落会跟着鹿群往南边迁。","夜里那七颗排成勺子的星，是我们认路的地图。","红果要等到鸟啄过的那一棵才最甜——鸟比你懂。"],
+egy:["尼罗河一年泛滥一次，泛滥退去后的泥最肥，种麦子正好。","猫是巴斯特女神的化身，伤一只猫是重罪。","金字塔的巨石是顺着尼罗河用木橇拖来的。","圣书体有七百多个符号，我学了十二年，还认不全。","晒莎草纸要三天，急不得，急了纸会脆。"],
+rome:["路修到哪里，罗马的商队就走到哪里——所以路一定要直。","公共浴场不只是洗澡的地方，是全城聊八卦的中心。","斗兽场一天能坐五万人，散场只要一刻钟，你信吗？","一个军团小队八个人，同吃同住，共用一顶帐篷。","哲学家说美德即知识，可我见过的有知识的人未必都有美德。"],
+tang:["长安城一共一百零八坊，宵禁鼓一响，坊门就关了。","胡饼、葡萄酒、琵琶，都是顺着丝路从西边来的。","科举是平民也能登天的梯子，我邻家的孩子去年中了进士。","西市日中击鼓三百下开市，日落前三百下散市。","朱雀大街宽得能并行百匹马，皇帝出行才封街。"],
+now:["这座城市白天靠咖啡活着，夜里靠路灯。","末班地铁是城市一天里最温柔的时刻，累的人都睡着了。","你口袋里那块发光的小东西，装的书比图书馆还多。","我们低头看屏幕的时间越长，抬头看月亮的次数越少。","凌晨四点的菜市场比白天热闹，信我。"],
+fut:["空间站里一天能看到十六次日出，最先习惯的是不数了。","记忆可以备份，可我还是怕忘——备份的不是我。","太阳帆船不用燃料，光推着走，去木星要八个月。","我们把地球叫「老家」，其实很多人一次都没回去过。","时间邮局最贵的业务不是快，是准——送到那个人还活着的时候。"]};
+var VISIT_LINES=["墙上刻着一行小字：「时间不载人，人载时间。」","墙上有一行陌生的字迹：「我也来过。—— 1087 年的旅人」","墙角刻着：「如果你读到了这行字，说明门一直开着。」","墙上写着：「别急，先把这杯茶喝完。」","墙上刻着：「下一扇门后，替我看一眼海。」"];
+
+/* ================= 时代配置 ================= */
+var ERAS=[
+{key:"pre",name:"远古时代",year:"公元前 10,000 年",fg:"#2C4A18",sky:["#0A1428","#B9C99A"],gnd:["#0D180B","#8FA76B"],weathers:["clear","clear","rain"],
+ far:[["menhir",-13,50],["menhir",14,55]],
+ props:[["dino",-8,36],["dino",7,44],["dino",-4,55],["fernT",-2.4,15],["fernT",3.2,19],["fernT",6,26],["fernT",-7,28],["fire",-4.6,9.6],
+        ["rock",-10,13],["bush",10,16],["rock",9,19],["bush",-3,21],["rock",2,30],["bush",-9,33],["fernT",8.5,12],["fernT",-11,20],["rock",6,35],["bush",-5,44],["pond",11,40]],
+ npcs:[{n:"篝火老人",x:-4.2,z:10.2,robe:"#6E5A3A",hat:"hood",hold:"staff",face:"calm",self:"我守着这堆火四十年了，火种比命还贵。",like:"夜里的星星"},
+       {n:"采果少女",x:6.4,z:12.6,robe:"#8C5B3C",hat:"straw",hold:"basket",face:"smile",self:"林子深处的红果最甜，但深处分不清方向。",like:"雨后的果子"},
+       {n:"猎手",x:-7.5,z:16,robe:"#4E4232",hat:"hood",hold:"spear",face:"calm",q:{des:"我的燧石掉进东边草丛里找不到了……你愿意帮我找找吗？",it:"遗落的燧石",icon:"spark",rw:"猎手的祝福",rwline:"哈！正是它！这个给你——戴着它，鹿群会绕着你走。"},self:"今天追了一头鹿，它比我聪明。明天再试。",like:"清晨的兽迹"},
+       {n:"小豆",x:1.8,z:11,robe:"#7A6248",face:"wow",self:"你从天上来吗？你的衣服会发光！教教我！",like:"追着蝴蝶到处跑"}],
+ creatures:[{a:"deer",x:-2,z:14,n:"小鹿"},{a:"deer",x:5,z:20,n:"成年鹿"},{a:"dog",x:3,z:9.5,n:"半驯的狼"}],
+ houses:[{x:-5.6,z:9,prop:"tent",label:"部落的帐篷",sd:1,host:{n:"帐篷里的老祖母",robe:"#5C4A30",hat:"hood",face:"smile",self:"外头风大，进来坐。火边暖和。",like:"孩子们围着火堆笑"},gift:{icon:"fish",name:"烤鱼干"}}],
+ items:[{x:-1.6,z:8,icon:"axe",name:"打制石斧"},{x:3,z:16,icon:"bone",name:"兽骨项链"},{x:-8,z:22,icon:"spark",name:"火种石"}]},
+{key:"egy",name:"古埃及",year:"公元前 2560 年",fg:"#6E4A16",sky:["#0A1024","#FAEEDA"],gnd:["#221A0A","#D8B06A"],weathers:["clear","clear","sand"],
+ far:[["pyramid",-14,52],["pyramid",13,58],["pyramid",0,62]],
+ props:[["obelisk",-3,14],["obelisk",2.6,17],["palm",5.5,10],["palm",7,13],["palm",-6.5,12],["colonnade",-8,30],
+        ["rock",-9,21],["palm",0,26],["palm",9,31],["stall",1,20],["rock",6,36],["palm",-2,38],["obelisk",-10,42],["bush",-7,15],["rock",11,25],["stall",-4,33]],
+ npcs:[{n:"书吏",x:-2.6,z:14.6,robe:"#D9CFA8",hat:"nemes",hold:"scroll",face:"calm",self:"莎草纸要晒足三天才能下笔。你从哪个诺姆来？",like:"整齐的圣书体"},
+       {n:"石匠",x:3.4,z:17.8,robe:"#8A6A3A",hat:"straw",face:"calm",self:"方尖碑是一整块石头，凿歪一寸就全废。",like:"花岗岩的心跳"},
+       {n:"祭司",x:-6,z:20,robe:"#F2EBDC",hat:"nemes",face:"calm",q:{des:"神庙的青铜铃昨夜被风吹进了沙漠……你能替我找回来吗？",it:"神庙的青铜铃",icon:"fan",rw:"祭司的护身符",rwline:"巴斯特别的保佑你。这枚护身符，猫见了都会对你打招呼。"},self:"猫走过神庙的门槛，比法老还受尊敬。",like:"尼罗河的涨落"},
+       {n:"卖水人",x:2,z:11,robe:"#A67C40",hat:"straw",face:"smile",self:"陶罐里的水凉得很，一枚铜币一瓢。",like:"黄昏时的河风"}],
+ creatures:[{a:"cat",x:-1,z:12,n:"神庙的猫"},{a:"cat",x:4.5,z:15,n:"晒太阳的猫"},{a:"camel",x:7.5,z:24,n:"商队的骆驼",ride:1}],
+ houses:[{x:-6.5,z:12,prop:"mudhouse",label:"泥砖屋",sd:1,host:{n:"泥砖屋的织工",robe:"#B99A5E",hat:"straw",face:"smile",self:"欢迎欢迎，刚烤的饼还热着。亚麻要纺到天黑。",like:"织机咔嗒咔嗒的声音"},gift:{icon:"bread",name:"无花果烤饼"}}],
+ items:[{x:1.4,z:9,icon:"scarab",name:"圣甲虫护符"},{x:-5,z:18,icon:"scroll",name:"纸莎草卷"},{x:8,z:24,icon:"mirror",name:"磨光铜镜"}]},
+{key:"rome",name:"古罗马",year:"公元 120 年",fg:"#5F5E5A",sky:["#0A1024","#C9D6E2"],gnd:["#15140F","#9A927E"],weathers:["clear","clear","rain"],
+ far:[["colosseum",-14,50],["colonnade",13,54]],
+ props:[["colosseum",-9,38],["arch",2.2,14],["colonnade",7,28],["cyp",-4,12],["cyp",-5.2,13],["cyp",9,20],["cyp",10.2,21],["menhir",-11,24],
+        ["fountain",5,18],["statue",-5,22],["stall",-2,19],["bench",7,14],["cyp",0,29],["colonnade",-11,36],["cart",3,25],["rock",10,27],["stall",9,31],["statue",-10,31]],
+ npcs:[{n:"广场商人",x:2.8,z:14.4,robe:"#7E3B2E",face:"smile",self:"香料、玻璃、橄榄油——罗马什么都有，只要你有银币。",like:"公共浴场"},
+       {n:"军团士兵",x:-3.4,z:13,robe:"#8C2B22",hat:"helmet",hold:"spear",face:"calm",self:"哨位不许闲聊。……好吧，就聊一句。",like:"行军秩序"},
+       {n:"哲学家",x:-8,z:26,robe:"#D8D3C8",face:"calm",q:{des:"我的一卷手稿被风吹散了，拣回来的那卷……你能帮我找回吗？",it:"散落的哲学残卷",icon:"scroll",rw:"哲人的箴言卷",rwline:"「认识你自己。」——这卷送你，比银币值钱。"},self:"美德即知识。但你先请坐，站着谈哲学伤腿。",like:"橄榄树的影子"},
+       {n:"卖花姑娘",x:5.4,z:16.6,robe:"#A0524D",face:"smile",self:"今日的玫瑰是给维纳斯的，剩下的卖给你。",like:"喷泉边的水声"}],
+ creatures:[{a:"dog",x:-1.5,z:11.5,n:"看摊的狗"},{a:"pigeon",x:3.8,z:13.5,n:"广场鸽"},{a:"pigeon",x:-5.8,z:18,n:"广场鸽"},{a:"horse",x:6.8,z:24,n:"西班牙战马",ride:1}],
+ houses:[{x:-7.5,z:19,prop:"villa",label:"白色别墅",sd:1,host:{n:"别墅的主人",robe:"#E3DCCB",face:"smile",self:"一位行脚的旅人？正好，晚宴多一副餐具。",like:"地窖里陈年的葡萄酒"},gift:{icon:"wine",name:"一瓶葡萄酒"}}],
+ items:[{x:-1.4,z:10,icon:"coin",name:"罗马铜币"},{x:5,z:19,icon:"lamp",name:"陶土油灯"},{x:-7,z:26,icon:"knight",name:"大理石棋子"}]},
+{key:"tang",name:"盛唐 · 长安",year:"公元 730 年",fg:"#712B13",sky:["#0A1024","#F5C4B3"],gnd:["#170F0B","#B98C5E"],weathers:["clear","clear","rain","snow"],
+ far:[["pagoda",-13,52],["gate",12,56]],
+ props:[["gate",-8,34],["pagoda",9,44],["towerCN",-5,24],["wallRun",-11,30],["houseCN",8.4,19],["lantern",-2.2,8],["lantern",2.2,8],["cyp",10,26],
+        ["pond",-2,28],["stall",6,13],["lantern",8,17],["cart",0,20],["bush",-9,15],["lantern",-6,20],["signboard",-1,13],["stall",-7,30],["houseCN",10,30],["bush",-3,44],["lantern",4,24]],
+ npcs:[{n:"胡商",x:-4.6,z:25,robe:"#5E3A7E",hat:"futou",face:"smile",q:{des:"一袋安息香料从驼背上滚下去了……遍寻不得，客官可否帮我找找？",it:"滚落的香料袋",icon:"seed",rw:"一小袋西域香料",rwline:"多谢客官！这袋香料你拿着——长安城里闻不到这个味儿。"},self:"波斯的香料、大食的宝石，长安什么稀罕货都见得到。",like:"西市的喧闹"},
+       {n:"卖茶姑娘",x:4.8,z:16.4,robe:"#9C4A38",face:"smile",self:"茶要趁热，诗要趁兴。客官来一碗？",like:"曲江的春天"},
+       {n:"书生",x:-2.4,z:18,robe:"#3E5C8C",hat:"futou",face:"calm",self:"昨夜读《九章》，今晨看落雁——都是好文章。",like:"大雪后的朱雀街"},
+       {n:"更夫",x:7.6,z:22,robe:"#6E4E2E",hat:"futou",hold:"staff",face:"calm",self:"天干物燥——小心火烛。夜里全城都听我这一嗓子。",like:"打更的梆子声"}],
+ creatures:[{a:"horse",x:-7,z:28,n:"驮货的马",ride:1},{a:"crane",x:2.6,z:24,n:"池边的鹤"},{a:"cat",x:3,z:10,n:"茶摊的猫"}],
+ houses:[{x:4,z:16,prop:"houseCN",label:"临街小院",sd:1,host:{n:"小院的主人",robe:"#7C5A34",hat:"futou",face:"smile",self:"贵客临门！灶上正好温着酒。这院里的槐树比我岁数还大。",like:"秋天的槐花香"},gift:{icon:"tea",name:"一饼好茶"}}],
+ items:[{x:-2.4,z:9.4,icon:"coinT",name:"开元通宝"},{x:6,z:21,icon:"fan",name:"鎏金香囊"},{x:-9,z:38,icon:"horse",name:"三彩小马"}]},
+{key:"now",name:"今夜 · 城市",year:"公元 2026 年",fg:"#0C447C",sky:["#0A1024","#B5D4F4"],gnd:["#101216","#6E7A82"],weathers:["clear","clear","rain"],
+ far:[["bldg",-14,48],["bldg",13,52],["tvTower",0,60]],
+ props:[["bldg",-9,34,1],["bldg",-5,40,2],["bldg",6,36,3],["bldg",10,44,4],["tvTower",-2,46],["lamp",-3,10],["lamp",3,10],["lamp",0,22],["cyp",8.6,14],["cyp",-7.8,15],
+        ["bench",-5,12],["crate",-8,18],["stall",2,16],["lamp",8,20],["bench",6,26],["lamp",-6,24],["bldg",3,28,5],["cyp",10,30],["crate",-10,33],["lamp",7,36]],
+ npcs:[{n:"夜跑者",x:-2.6,z:10.6,robe:"#2E5C8C",hat:"cap",face:"calm",self:"绕完第八圈了。城市的夜比白天安静，但没那么寂寞。",like:"凌晨的马路"},
+       {n:"街头摄影师",x:3.4,z:11.4,robe:"#3A3A44",hat:"cap",hold:"camera",face:"smile",q:{des:"我把一卷拍完的胶卷落在喷泉边了……里面是这城市一整年的夜。",it:"丢失的胶卷",icon:"film",rw:"摄影师的样片",rwline:"冲出来了！这张——路灯下的人是你吧？送你。"},self:"路灯亮起的那七分钟，是城市最诚实的时刻。",like:"霓虹在湿地上的倒影"},
+       {n:"深夜摊主",x:-6.2,z:14,robe:"#7E4A2E",face:"smile",self:"炒粉、关东煮、热豆浆——深夜的胃最诚实。",like:"摊子亮着灯的时候"},
+       {n:"加班的人",x:6.2,z:16,robe:"#4A4A56",hold:"tablet",face:"sad",self:"刚下班。你说奇不奇怪，我居然舍不得这栋楼熄灯。",like:"末班地铁的座位"}],
+ creatures:[{a:"dog",x:1.4,z:9.5,n:"遛弯的柴犬"},{a:"pigeon",x:-4.4,z:12,n:"广场鸽"},{a:"cat",x:6,z:13,n:"便利店猫"}],
+ houses:[{x:-3,z:20,prop:"bldg",label:"亮灯的公寓",sd:9,host:{n:"公寓里的插画师",robe:"#5E4E7E",face:"smile",self:"随便坐，猫不咬人。我正给一本讲时间的书画插图。",like:"雨天窗边的稿纸"},gift:{icon:"photo",name:"手绘明信片"}}],
+ items:[{x:-1,z:12,icon:"film",name:"老式胶卷"},{x:4.4,z:18,icon:"record",name:"黑胶唱片"},{x:-6,z:28,icon:"ticket",name:"旧车票"}]},
+{key:"fut",name:"星港 · 未来",year:"公元 3021 年",fg:"#26215C",sky:["#050B1E","#31406B"],gnd:["#080C18","#2A3550"],weathers:["clear","clear","snow"],
+ far:[["spire",-14,50],["spire",14,54],["ringPortal",0,62]],
+ props:[["spire",-8,34],["spire",-4,42],["spire",7,38],["spire",10,46],["lamp",-3,9],["lamp",3,9],["lamp",0,20],["cyp",6.8,12],["cyp",-6.8,13],
+        ["spire",-11,28],["spire",4,30],["lamp",-8,16],["lamp",8,18],["cyp",2,25],["spire",11,36],["crate",-3,21],["spire",-6,44]],
+ npcs:[{n:"星港向导",x:-2.8,z:10,robe:"#3E5C8C",face:"smile",self:"欢迎来到第 7 空港。时间在这里是可折叠的。",like:"超光速航行时的一秒"},
+       {n:"机器人馆员",x:3.2,z:10.6,robe:"#5E6A8C",hat:"antenna",face:"calm",self:"我保管着人类一万年的记忆。你也想存点什么吗？",like:"旧书页的味道（模拟）"},
+       {n:"基因设计师",x:-6,z:15,robe:"#7E5C9C",hold:"tablet",face:"smile",self:"我刚才设计了一种会发光的树。评委说太吵了。",like:"第一批开花的星光树"},
+       {n:"时间邮差",x:5.6,z:13,robe:"#8C6A3E",face:"sad",q:{des:"有一封信寄错了年代，落在了这个空港……能帮我把它找回来吗？",it:"寄错年代的信",icon:"photo",rw:"时间邮戳",rwline:"找到了！盖个邮戳给你——凭它，邮局欠你一次免费穿越。"},self:"我负责给过去的人送信。大多数信写的是对不起。",like:"收信人惊喜的表情"}],
+ creatures:[{a:"robo",x:0.8,z:12,n:"伴游浮宠",ride:1},{a:"robo",x:-4.8,z:17,n:"馆员的分身"},{a:"cat",x:4.4,z:15,n:"基因复原的猫"}],
+ houses:[{x:2.4,z:16,prop:"pod",label:"观光舱",sd:1,host:{n:"舱内的合成智能",robe:"#4E5C8C",hat:"antenna",face:"smile",self:"检测到访客。我烧了一壶 22 世纪的茶——成分百分之百安全。",like:"用一纳秒想完一首诗"},gift:{icon:"orb",name:"记忆晶片"}}],
+ items:[{x:-1.2,z:11,icon:"badge",name:"反重力徽章"},{x:5,z:20,icon:"starmap",name:"星图卡"},{x:-5,z:26,icon:"seed",name:"全息种子"}]}
+];
+var TOTAL=24;
+
+/* ================= 走廊 ================= */
+var ART={
+pre:'<rect width="190" height="130" fill="#B9C99A"/><circle cx="152" cy="26" r="11" fill="#F1EFE8"/><path d="M0 130 L0 84 Q55 58 95 88 Q140 118 190 82 L190 130 Z" fill="#3B6D11"/><ellipse cx="95" cy="90" rx="26" ry="12" fill="#173404"/><path d="M112 86 L120 54" stroke="#173404" stroke-width="8" fill="none"/><circle cx="121" cy="50" r="7" fill="#173404"/><rect x="78" y="100" width="6" height="18" fill="#173404"/><rect x="104" y="100" width="6" height="18" fill="#173404"/>',
+egy:'<rect width="190" height="130" fill="#FAEEDA"/><circle cx="52" cy="34" r="16" fill="#D85A30"/><path d="M0 130 L0 108 L190 104 L190 130 Z" fill="#C9A45E"/><path d="M55 108 L95 52 L135 108 Z" fill="#BA7517"/><path d="M120 108 L152 68 L184 108 Z" fill="#854F0B"/>',
+rome:'<rect width="190" height="130" fill="#C9D6E2"/><circle cx="160" cy="24" r="12" fill="#F1EFE8"/><path d="M0 130 L0 106 L190 102 L190 130 Z" fill="#9A927E"/><path d="M28 102 L28 60 Q95 40 162 60 L162 102 Z" fill="#5F5E5A"/><rect x="38" y="70" width="10" height="14" fill="#C9D6E2" opacity=".5"/><rect x="56" y="70" width="10" height="14" fill="#C9D6E2" opacity=".5"/><rect x="74" y="70" width="10" height="14" fill="#C9D6E2" opacity=".5"/>',
+tang:'<rect width="190" height="130" fill="#F5C4B3"/><circle cx="42" cy="30" r="14" fill="#D85A30"/><path d="M0 130 L0 108 L190 104 L190 130 Z" fill="#B98C5E"/><rect x="78" y="70" width="34" height="36" fill="#712B13"/><path d="M70 72 L95 46 L120 72 Z" fill="#993C1D"/><path d="M74 56 L95 34 L116 56 Z" fill="#993C1D"/><path d="M79 42 L95 26 L111 42 Z" fill="#712B13"/>',
+now:'<rect width="190" height="130" fill="#B5D4F4"/><rect x="18" y="44" width="30" height="64" fill="#0C447C"/><rect x="56" y="30" width="26" height="78" fill="#185FA5"/><rect x="92" y="52" width="34" height="56" fill="#378ADD"/><rect x="134" y="38" width="28" height="70" fill="#185FA5"/><g fill="#FAC775"><rect x="60" y="38" width="5" height="6"/><rect x="70" y="52" width="5" height="6"/><rect x="98" y="60" width="5" height="6"/><rect x="140" y="46" width="5" height="6"/></g>',
+fut:'<rect width="190" height="130" fill="#31406B"/><circle cx="95" cy="62" r="40" fill="none" stroke="#7fe7ff" stroke-width="2" opacity=".7"/><ellipse cx="95" cy="62" rx="46" ry="10" fill="none" stroke="#AFA9EC" stroke-width="2"/><path d="M30 130 L38 62 M160 130 L152 62" stroke="#26215C" stroke-width="6"/><circle cx="38" cy="58" r="3" fill="#7fe7ff"/><circle cx="152" cy="58" r="3" fill="#7fe7ff"/>'};
+var corFrames=[],cam=0,camT=0;
+(function buildCorridor(){
+ var cw=$("cw");
+ for(var s=0;s<34;s++){var d2=document.createElement("div");d2.className="dust";
+  var ss=2+rnd(s)*2;
+  d2.style.cssText="left:"+(8+rnd(s+40)*84)+"%;top:"+(15+rnd(s+80)*75)+"%;width:"+ss+"px;height:"+ss+"px;animation:drift "+(6+rnd(s+9)*8)+"s linear "+(-rnd(s+5)*8)+"s infinite";
+  cw.appendChild(d2)}
+ ERAS.forEach(function(e,i){
+  var p=document.createElement("div");p.className="pos";
+  p.style.transform="translate3d("+(i%2?300:-300)+"px,"+(i%2?8:-8)+"px,"+(-100-i*380)+"px) rotateY("+(i%2?-30:30)+"deg)";
+  var vis=store.vis.indexOf(e.key)>=0;
+  p.innerHTML='<div class="card'+(vis?" visited":"")+'"><div class="art"><svg viewBox="0 0 190 130" style="width:100%">'+ART[e.key]+'</svg></div><div class="cap"><b></b><span></span></div></div>';
+  cw.appendChild(p);corFrames.push({e:e,el:p});
+  p.addEventListener("click",function(ev){ev.stopPropagation();openScene(e)});
+ });
+ var door=document.createElement("div");door.className="pos";
+ door.style.transform="translate3d(0,0,"+(-100-ERAS.length*380-160)+"px)";
+ door.innerHTML='<div style="width:132px;height:196px;border:2px solid rgba(250,199,117,.55);border-radius:66px 66px 8px 8px;background:rgba(250,199,117,.05);display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;cursor:pointer"><span class="doorLbl" style="font-size:11px;color:rgba(250,199,117,.8)">时间尽头</span></div>';
+ cw.appendChild(door);
+ door.addEventListener("click",function(ev){ev.stopPropagation();openEnd()});
+})();
+var corMax=2350;
+function corLoop(now){
+ var dt=Math.min((now-corLast)/1000,0.05);corLast=now;
+ if(!sceneOpen){
+  cam+=(camT-cam)*0.09;if(Math.abs(camT-cam)<0.3)cam=camT;
+  $("cw").style.transform="translateZ("+cam+"px) rotateY("+(corYaw*8)+"deg)";
+  $("corFill").style.width=(clamp(cam/corMax,0,1)*100)+"%";
+  var nearest=corFrames[0],nd=1e9;
+  corFrames.forEach(function(f){var z=-100-ERAS.indexOf(f.e)*380;var dd=Math.abs(z+cam);if(dd<nd){nd=dd;nearest=f}});
+  $("corYear").textContent=t2(nearest.e.year);$("corEra").textContent=t2(nearest.e.name);
+ }
+ requestAnimationFrame(corLoop);
+}
+var corLast=performance.now(),corYaw=0,sceneOpen=false,corDrag=null;
+$("cor").addEventListener("wheel",function(e){e.preventDefault();camT=clamp(camT+e.deltaY*0.6,0,corMax);
+ if(!corShown){corShown=true;$("corHint").style.opacity=0}},{passive:false});
+var corShown=false;
+$("cor").addEventListener("pointerdown",function(e){if(e.target.closest(".card")||e.target.closest("button"))return;corDrag={x:e.clientX,y:e.clientY};$("cor").style.cursor="grabbing"});
+$("cor").addEventListener("pointermove",function(e){
+ if(corDrag){camT=clamp(camT-(e.clientY-corDrag.y)*3,0,corMax);corDrag={x:e.clientX,y:e.clientY};return}
+ var r=$("cor").getBoundingClientRect();corYaw=((e.clientX-r.left)/r.width-0.5)*-1;});
+$("cor").addEventListener("pointerup",function(){corDrag=null;$("cor").style.cursor="grab"});
+$("cor").addEventListener("pointerleave",function(){corDrag=null;$("cor").style.cursor="grab"});
+requestAnimationFrame(corLoop);
+
+/* ================= 画中场景引擎 ================= */
+var cv=$("cv"),ctx=cv.getContext("2d");
+var W=0,H=0,horizon=0,FOV=560,EY=1.55;
+var era=null,P0={x:0,z:6},yaw=0,yawT=0,keys={},tSec=0,dayPhase=0.28,dayDir=1,paused=false,lastT=performance.now();
+var stars=[],nearNpc=null,nearItem=null,birds=[],nearCreature=null,nearHouse=null,inside=null;
+var riding=null,photoMode=false,bobP=0,bobY=0,nearDig=null,questItem=null;
+var EY=1.55;
+for(var i=0;i<70;i++)stars.push([rnd(i),rnd(i+99)*0.42,0.7+rnd(i+55)*1.3]);
+for(var b=0;b<3;b++)birds.push({x:Math.random(),y:0.14+Math.random()*0.1,v:0.02+Math.random()*0.02});
+var clouds=[];for(var c2=0;c2<4;c2++)clouds.push({x:rnd(c2+300),y:0.06+rnd(c2+360)*0.14,v:0.006+rnd(c2+420)*0.01,s:0.6+rnd(c2+480)*0.8});
+function openScene(e){
+ era=e;sceneOpen=true;inside=null;riding=null;photoMode=false;$("photoF").style.display="none";
+ P0={x:0,z:6};yaw=0;yawT=0;pitch=0;pitchT=0;dayPhase=0.28;dayDir=1;paused=false;bobP=0;bobY=0;EY=1.55;
+ weather=(WEATHERS[e.key]||["clear"])[Math.floor(Math.random()*(WEATHERS[e.key]||["clear"]).length)];
+ startAmbient();
+ if(rainGain&&!muted)rainGain.gain.value=weather=="rain"?0.03:0;
+ $("cor").style.display="none";$("sc").style.display="block";
+ $("scEra").textContent=t2(e.name);$("scYear").textContent=t2(e.year);
+ if(weather!="clear")toast2(L("画中的天气：","Weather in the painting: ")+t2(WEATHER_NAME[weather]));
+ if(store.vis.indexOf(e.key)<0){store.vis.push(e.key);saveStore();
+  var idx=ERAS.indexOf(e);corFrames[idx].el.querySelector(".card").classList.add("visited")}
+ var r=$("sc").getBoundingClientRect();
+ W=cv.width=r.width;H=cv.height=r.height;horizon=H*0.55;FOV=W*0.82;
+ dlgClose();
+}
+function closeScene(){
+ sceneOpen=false;inside=null;$("sc").style.display="none";$("cor").style.display="block";dlgClose();
+ $("pocketPanel").style.display="none";
+}
+$("backCor").addEventListener("click",closeScene);
+window.addEventListener("resize",function(){if(sceneOpen){var r=$("sc").getBoundingClientRect();W=cv.width=r.width;H=cv.height=r.height;horizon=H*0.55;FOV=W*0.82}});
+document.addEventListener("keydown",function(e){
+ if(!sceneOpen)return;
+ var k=e.key.toLowerCase();
+ if(k==" ")e.preventDefault();
+ /* 正在输入框打字：只允许 Esc 关闭 */
+ if(e.target===$("dlgIn")){if(k=="escape")dlgClose();return}
+ /* 对话悬浮时按空格/Esc 收起 */
+ if(dlgOpen&&(k==" "||k=="escape")){dlgClose();return}
+ keys[k]=true;
+ if(k=="t"&&nearNpc&&!dlgOpen)dlgOpenNpc(nearNpc);
+ if((k=="e"||k==" ")&&nearItem&&!dlgOpen)collectItem(nearItem);
+ if(k=="g"&&!dlgOpen)gInteract();
+ if(k=="f"&&!dlgOpen)toggleHouse();
+ if(k=="r"){dayDir=-dayDir;toast2(dayDir<0?L("时间开始倒流……","Time begins to flow backward…"):L("时间恢复前进","Time flows forward again"))}
+ if(k=="p"){paused=!paused;toast2(paused?L("画中的时间暂停了","Time in the painting is paused"):L("时间继续流动","Time flows on"))}
+ if(k=="h"){togglePhoto()}
+ if(k=="m"){$("muteBtn").click()}
+ if(k=="escape"){if(inside)toggleHouse();else closeScene()}
+});
+document.addEventListener("keyup",function(e){keys[e.key.toLowerCase()]=false});
+var scDrag=null;
+cv.addEventListener("pointerdown",function(e){
+ var hit=hitNpc(e.offsetX,e.offsetY);if(hit){dlgOpenNpc(hit);return}
+ var it=hitItem(e.offsetX,e.offsetY);if(it){collectItem(it);return}
+ scDrag={x:e.clientX,y:e.clientY};cv.style.cursor="grabbing"});
+cv.addEventListener("pointermove",function(e){
+ if(scDrag){ /* 拖拽：相对转动，可连续转圈、翻身 */
+  yawT+=(e.clientX-scDrag.x)*0.0034;
+  pitchT=clamp(pitchT-(e.clientY-scDrag.y)*0.0034,-0.42,0.42);
+  scDrag={x:e.clientX,y:e.clientY}}
+ else if(!dlgOpen&&!photoMode){ /* 悬停：鼠标位置直接映射到全方位视角 */
+  yawT=(e.clientX/W-0.5)*Math.PI*2;
+  pitchT=clamp((0.5-e.clientY/H)*0.8,-0.42,0.42)}});
+cv.addEventListener("pointerup",function(){scDrag=null;cv.style.cursor="crosshair"});
+cv.addEventListener("pointerleave",function(){scDrag=null;cv.style.cursor="crosshair"});
+var pitch=0,pitchT=0; /* 俯仰：正=抬头 */
+function project(wx,wz){
+ /* 真旋转投影：yaw 可 360°，pitch 抬头低头（通过 horizon 平移） */
+ var dx=wx-P0.x,dz=wz-P0.z;
+ var sn=Math.sin(yaw),cs=Math.cos(yaw);
+ var rx=dx*cs-dz*sn,rz=dx*sn+dz*cs;
+ if(rz<0.4)return null;
+ var k=FOV/rz;
+ return{sx:W/2+k*rx,sy:horizon+EY*k+bobY,s:FOV/rz*0.07,d:rz}}
+function label(sx,sy,txt,col){
+ if(photoMode)return;
+ ctx.font="12px 'Segoe UI','Microsoft YaHei',sans-serif";ctx.textAlign="center";
+ ctx.fillStyle="rgba(0,0,0,.45)";var w=ctx.measureText(txt).width+14;
+ ctx.fillRect(sx-w/2,sy-22,w,20);ctx.fillStyle=col||"rgba(255,255,255,.92)";ctx.fillText(txt,sx,sy-8)}
+/* 收集物图标 */
+var ICONS={
+axe:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.moveTo(-3*s,6*s);ctx.lineTo(3*s,-6*s);ctx.stroke();ctx.fillStyle="#FAC775";ctx.beginPath();ctx.moveTo(2*s,-8*s);ctx.lineTo(8*s,-4*s);ctx.lineTo(3*s,-2*s);ctx.closePath();ctx.fill()},
+bone:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2.4*s;ctx.beginPath();ctx.moveTo(-5*s,0);ctx.lineTo(5*s,0);ctx.stroke();ctx.fillStyle="#FAC775";[[-6,-2],[-6,2],[6,-2],[6,2]].forEach(function(p){ctx.beginPath();ctx.arc(p[0]*s,p[1]*s,2*s,0,7);ctx.fill()})},
+spark:function(s){ctx.fillStyle="#FAC775";ctx.beginPath();ctx.moveTo(0,-7*s);ctx.quadraticCurveTo(6*s,0,0,7*s);ctx.quadraticCurveTo(-6*s,0,0,-7*s);ctx.fill()},
+scarab:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=1.8*s;ctx.beginPath();ctx.ellipse(0,0,5*s,7*s,0,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(0,-7*s);ctx.lineTo(0,7*s);ctx.moveTo(-5*s,0);ctx.lineTo(5*s,0);ctx.stroke()},
+scroll:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.strokeRect(-6*s,-4*s,12*s,8*s);ctx.beginPath();ctx.moveTo(-6*s,-4*s);ctx.lineTo(-8*s,-6*s);ctx.moveTo(6*s,4*s);ctx.lineTo(8*s,6*s);ctx.stroke()},
+mirror:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.arc(0,-2*s,5*s,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(0,3*s);ctx.lineTo(0,7*s);ctx.stroke()},
+coin:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.arc(0,0,6*s,0,7);ctx.stroke();ctx.beginPath();ctx.arc(-2*s,0,2*s,0,7);ctx.stroke()},
+lamp:function(s){ctx.fillStyle="#FAC775";ctx.beginPath();ctx.ellipse(0,1*s,6*s,4*s,0,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(5*s,-1*s);ctx.lineTo(8*s,-5*s);ctx.stroke()},
+knight:function(s){ctx.fillStyle="#FAC775";ctx.beginPath();ctx.moveTo(-4*s,6*s);ctx.lineTo(-2*s,-4*s);ctx.lineTo(0,-7*s);ctx.lineTo(2*s,-4*s);ctx.lineTo(4*s,6*s);ctx.closePath();ctx.fill()},
+coinT:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.arc(0,0,6*s,0,7);ctx.stroke();ctx.strokeRect(-2*s,-2*s,4*s,4*s)},
+fan:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=1.8*s;ctx.beginPath();ctx.arc(0,2*s,7*s,Math.PI,0);ctx.stroke();for(var i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(0,2*s);ctx.lineTo(i*5*s,-4*s);ctx.stroke()}},
+horse:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.moveTo(-5*s,5*s);ctx.lineTo(-5*s,-1*s);ctx.lineTo(3*s,-1*s);ctx.lineTo(6*s,-6*s);ctx.stroke();ctx.beginPath();ctx.moveTo(3*s,-1*s);ctx.lineTo(3*s,5*s);ctx.moveTo(-2*s,-1*s);ctx.lineTo(-2*s,5*s);ctx.stroke()},
+film:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.strokeRect(-7*s,-5*s,14*s,10*s);ctx.fillStyle="#FAC775";[[-5,-3],[-1,-3],[3,-3],[-5,3],[-1,3],[3,3]].forEach(function(p){ctx.fillRect(p[0]*s,p[1]*s,2*s,2*s)})},
+record:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=1.6*s;ctx.beginPath();ctx.arc(0,0,7*s,0,7);ctx.stroke();ctx.beginPath();ctx.arc(0,0,4*s,0,7);ctx.stroke();ctx.beginPath();ctx.arc(0,0,1.5*s,0,7);ctx.stroke()},
+ticket:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.strokeRect(-8*s,-4*s,16*s,8*s);ctx.beginPath();ctx.moveTo(-3*s,-4*s);ctx.lineTo(-3*s,4*s);ctx.stroke()},
+badge:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();for(var i=0;i<5;i++){var a=-Math.PI/2+i*Math.PI*4/5;var px=Math.cos(a)*7*s,py=Math.sin(a)*7*s;if(i==0)ctx.moveTo(px,py);else ctx.lineTo(px,py)}ctx.closePath();ctx.stroke()},
+starmap:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=1.6*s;ctx.beginPath();ctx.arc(0,0,7*s,0,7);ctx.stroke();ctx.fillStyle="#FAC775";[[0,-4],[4,1],[-3,3]].forEach(function(p){ctx.beginPath();ctx.arc(p[0]*s,p[1]*s,1.4*s,0,7);ctx.fill()})},
+seed:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=1.8*s;ctx.beginPath();ctx.arc(0,3*s,4*s,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(0,-1*s);ctx.quadraticCurveTo(4*s,-5*s,2*s,-8*s);ctx.moveTo(0,-1*s);ctx.quadraticCurveTo(-4*s,-5*s,-2*s,-8*s);ctx.stroke()},
+fish:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.ellipse(0,0,6*s,3*s,0,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(-6*s,0);ctx.lineTo(-9*s,-3*s);ctx.moveTo(-6*s,0);ctx.lineTo(-9*s,3*s);ctx.stroke();ctx.fillStyle="#FAC775";ctx.beginPath();ctx.arc(3*s,-1*s,1*s,0,7);ctx.fill()},
+bread:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.ellipse(0,1*s,6*s,4*s,0,Math.PI,0);ctx.stroke();ctx.beginPath();ctx.moveTo(-6*s,1*s);ctx.lineTo(6*s,1*s);ctx.stroke()},
+wine:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.moveTo(-3*s,-6*s);ctx.lineTo(-2*s,0);ctx.lineTo(-4*s,6*s);ctx.moveTo(3*s,-6*s);ctx.lineTo(2*s,0);ctx.lineTo(4*s,6*s);ctx.moveTo(-4*s,6*s);ctx.lineTo(4*s,6*s);ctx.stroke()},
+tea:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.arc(0,0,5*s,Math.PI,0);ctx.lineTo(5*s,3*s);ctx.lineTo(-5*s,3*s);ctx.closePath();ctx.stroke();ctx.beginPath();ctx.moveTo(5*s,0);ctx.quadraticCurveTo(8*s,-2*s,7*s,-4*s);ctx.stroke();ctx.beginPath();ctx.moveTo(0,-6*s);ctx.quadraticCurveTo(2*s,-8*s,1*s,-10*s);ctx.stroke()},
+photo:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.strokeRect(-6*s,-4*s,12*s,9*s);ctx.beginPath();ctx.moveTo(-4*s,3*s);ctx.lineTo(-1*s,-1*s);ctx.lineTo(2*s,3*s);ctx.stroke();ctx.fillStyle="#FAC775";ctx.beginPath();ctx.arc(3*s,-2*s,1.2*s,0,7);ctx.fill()},
+orb:function(s){ctx.strokeStyle="#FAC775";ctx.lineWidth=2*s;ctx.beginPath();ctx.arc(0,0,6*s,0,7);ctx.stroke();ctx.beginPath();ctx.arc(0,0,2.5*s,0,7);ctx.stroke();for(var i=0;i<4;i++){var a2=i*Math.PI/2+0.6;ctx.beginPath();ctx.arc(Math.cos(a2)*4.2*s,Math.sin(a2)*4.2*s,1*s,0,7);ctx.stroke()}}};
+function collectItem(it){
+ if(it._quest){store.qstate[era.key]=2;saveStore();sfxQuest();
+  toast2(L("找到了：","Found it: ")+t2(it.name)+L("！快回去找","! Hurry back to ")+t2(it._npc)+L("复命"," and report"));return}
+ var arr=store.items[era.key]||[];
+ if(arr.indexOf(it.name)>=0)return;
+ arr.push(it.name);store.items[era.key]=arr;saveStore();updPk();renderPocket();sfxPickup();
+ toast2(L("已收进口袋：","Pocketed: ")+t2(it.name)+L("（"," (")+t2(era.name)+")");
+}
+function doDig(){
+ if(era.key=="pre"&&!store.tcLink){store.tcLink={t:Date.now()};saveStore();sfxDig();
+  toast2(L("你把一颗时光泥球埋进了土里——也许几千年后，有人会挖到它。","You bury a clay ball of time in the earth — perhaps in a few thousand years, someone will dig it up."))}
+ else if(era.key=="now"&&store.tcLink){store.tcLink=null;saveStore();sfxQuest();
+  if(!store.qrew.link){store.qrew.link="新石器陶珠";saveStore();renderPocket()}
+  toast2(L("泥球碎开——里面是一枚打磨光滑的新石器陶珠！它在你口袋里躺了一万年。","The clay ball crumbles — inside is a polished Neolithic clay bead! It has been waiting in your pocket for ten thousand years."))}
+}
+function hitNpc(mx,my){
+ if(!lastNpcHit)return null;
+ var h=lastNpcHit;if(Math.abs(mx-h.sx)<30*h.s&&Math.abs(my-(h.sy-14*h.s))<30*h.s)return h.npc;return null}
+function hitItem(mx,my){
+ if(!lastItemHit)return null;
+ var h=lastItemHit;if(Math.abs(mx-h.sx)<24*h.s&&Math.abs(my-(h.sy-6*h.s))<26*h.s)return h.it;return null}
+var lastNpcHit=null,lastItemHit=null;
+function toast2(t){
+ var el=$("corToast");$("cor").style.display=="none"&&(el.style.display="none");
+ var e2=document.getElementById("scToast")||null;
+ /* 场景内 toast 简化为在 hint 上方显示 */
+ var h=$("scHint");h.textContent=t;h.style.color="#FAC775";
+ clearTimeout(h._t);h._t=setTimeout(function(){h.textContent=HINT_TEXT;h.style.color="rgba(255,255,255,.45)"},2200);
+}
+/* ================= 进屋做客 ================= */
+function toggleHouse(){
+ if(inside){var hh=inside;inside=null;P0={x:hh.x+1.8,z:hh.z+2.6};yawT=0;sfxDoor();
+  $("scEra").textContent=t2(era.name);toast2(L("你从","You step out of the ")+t2(hh.label)+L("走了出来","."))}
+ else if(nearHouse){inside=nearHouse;P0={x:0,z:10.9};yawT=0;sfxDoor();
+  toast2(t2(pick(VISIT_LINES)));$("scEra").textContent=t2(era.name)+L(" · 屋内"," · Indoors");
+  setTimeout(function(){if(inside)toast2(t2(nearHouse.host.n)+L("招呼你坐下——按 T 可以和他聊聊"," invites you to sit — press T to chat"))},2600)}
+}
+/* ================= G 键综合互动 ================= */
+function gInteract(){
+ if(riding){var rr=riding;riding=null;EY=1.55;toast2(L("你从","You hop off the ")+t2(rr.n)+L("背上跳了下来","."));return}
+ if(nearDig){doDig();return}
+ if(nearCreature){
+  var cr=nearCreature.cr;
+  if(cr.ride){riding=cr;EY=2.3;cr._follow=true;sfxQuest();
+   toast2(L("你骑上了","You climb onto the ")+t2(cr.n)+L("——移动速度大增！再按 G 下马"," — much faster now! Press G to dismount"));return}
+  spawnHearts(nearCreature.sx,nearCreature.sy);sfxPet();
+  cr._follow=true;
+  var a=cr.a,w;
+  if(a=="robo")w=L("光环轻轻闪动，决定跟着你飞 ♥","its halo flickers — it decides to follow you ♥");
+  else if(a=="camel"||a=="horse"||a=="deer"||a=="crane"){var pr=pick([["低下头蹭了蹭你的手心","lowers its head and nuzzles your palm"],["轻声鸣叫，凑近了些","calls softly and steps closer"],["安静地站着，让你摸了摸鬃毛","stands quietly and lets you stroke its mane"]]);w=L(pr[0],pr[1])}
+  else{var pr2=pick([["蹭了蹭你的裤脚 ♥","rubs against your leg ♥"],["竖起尾巴绕着你转了一圈","circles you with its tail high"],["打了个哈欠，靠在你脚边——它记住你了","yawns and leans on your foot — it remembers you"]]);w=L(pr2[0],pr2[1])}
+  toast2(t2(cr.n)+" "+w);
+ }
+}
+/* ================= 拍照模式 ================= */
+function togglePhoto(){
+ photoMode=!photoMode;
+ $("photoF").style.display=photoMode?"block":"none";
+ $("scHud").style.display=photoMode?"none":"block";
+ $("scTop").style.display=photoMode?"none":"flex";
+ $("scHint").style.display=photoMode?"none":"block";
+ if(photoMode)$("photoCap").textContent=t2(era.name)+" · "+t2(era.year)+" · "+fmtClock()+(weather!="clear"?" · "+t2(WEATHER_NAME[weather]):"");
+}
+/* ================= 屋内场景 ================= */
+function nearGiftDraw(){
+ var h=inside,tp=project(1.8,13);
+ if(!tp)return;
+ var tc=mix("#6E4A2E","#0B0B12",0.3);
+ ctx.fillStyle=tc;ctx.beginPath();ctx.ellipse(tp.sx,tp.sy-6*tp.s,7*tp.s,2.4*tp.s,0,0,7);ctx.fill();
+ ctx.strokeStyle=tc;ctx.lineWidth=2*tp.s;
+ ctx.beginPath();ctx.moveTo(tp.sx-5*tp.s,tp.sy-6*tp.s);ctx.lineTo(tp.sx-5*tp.s,tp.sy);ctx.moveTo(tp.sx+5*tp.s,tp.sy-6*tp.s);ctx.lineTo(tp.sx+5*tp.s,tp.sy);ctx.stroke();
+ var gi=store.items[era.key]||[];
+ if(h.gift&&gi.indexOf(h.gift.name)<0){
+  var d2=Math.hypot(1.8-P0.x,13-P0.z);
+  var gl=0.3+0.2*Math.sin(tSec*3)+((d2<2.8)?0.4:0);
+  ctx.save();ctx.globalAlpha=gl;ctx.fillStyle="#FAC775";ctx.beginPath();ctx.arc(tp.sx,tp.sy-13*tp.s,10*tp.s,0,7);ctx.fill();ctx.restore();
+  ctx.save();ctx.translate(tp.sx,tp.sy-13*tp.s);ICONS[h.gift.icon](tp.s*1.1);ctx.restore();
+  if(d2<2.8){label(tp.sx,tp.sy-24*tp.s,t2(h.gift.name)+L(" · 按空格拾取"," · Space to pick up"),"#FAC775");nearItem=h.gift;lastItemHit={it:h.gift,sx:tp.sx,sy:tp.sy-13*tp.s,s:tp.s}}
+ }
+}
+function drawInterior(){
+ var dl=Math.max(0,Math.sin((dayPhase%1)*Math.PI*2));
+ var h=inside;
+ nearItem=null;nearNpc=null;nearCreature=null;nearHouse=null;lastNpcHit=null;lastItemHit=null;
+ var fl=mix(mix(era.gnd[0],era.gnd[1],dl*0.7),"#000000",0.18);
+ var wl=mix(era.fg,"#141008",0.5);
+ ctx.fillStyle=mix(era.fg,"#070507",0.78);ctx.fillRect(0,0,W,H);
+ ctx.fillStyle=fl;ctx.fillRect(0,horizon,W,H-horizon);
+ ctx.strokeStyle="rgba(0,0,0,.28)";ctx.lineWidth=1;ctx.globalAlpha=0.6;
+ for(var gz=10.6;gz<16.2;gz+=1.3){var r2=project(0,gz);if(r2){ctx.beginPath();ctx.moveTo(W*0.05,r2.sy);ctx.lineTo(W*0.95,r2.sy);ctx.stroke()}}
+ ctx.globalAlpha=1;
+ function wall(ax,az,bx,bz,col){
+  var a1=project(ax,az),b1=project(bx,bz);if(!a1||!b1)return;
+  var k1=FOV/Math.max(a1.d,0.4),k2=FOV/Math.max(b1.d,0.4);
+  ctx.fillStyle=col;ctx.beginPath();
+  ctx.moveTo(a1.sx,a1.sy);ctx.lineTo(b1.sx,b1.sy);
+  ctx.lineTo(b1.sx,b1.sy-2.6*k2);ctx.lineTo(a1.sx,a1.sy-2.6*k1);ctx.closePath();ctx.fill()}
+ wall(-3,10,-3,16,mix(wl,"#000000",0.2));
+ wall(3,10,3,16,mix(wl,"#000000",0.08));
+ wall(-3.1,16,3.1,16,wl);
+ /* 窗户，天色随画中时间变化 */
+ var wp=project(-1.4,15.95);
+ if(wp){var kw=FOV/Math.max(wp.d,0.4),ww=2.6*kw,wh=1.1*kw;
+  ctx.fillStyle=mix(era.sky[0],era.sky[1],dl);ctx.fillRect(wp.sx,wp.sy-wh*2.3,ww,wh);
+  ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=2;ctx.strokeRect(wp.sx,wp.sy-wh*2.3,ww,wh);
+  ctx.beginPath();ctx.moveTo(wp.sx+ww/2,wp.sy-wh*2.3);ctx.lineTo(wp.sx+ww/2,wp.sy-wh*1.2);ctx.moveTo(wp.sx,wp.sy-wh*1.75);ctx.lineTo(wp.sx+ww,wp.sy-wh*1.75);ctx.stroke()}
+ /* 各时代墙饰 */
+ var dp=project(1,15.95);
+ if(dp){var kd=FOV/Math.max(dp.d,0.4),dy=dp.sy-1.65*kd;
+  ctx.save();
+  if(era.key=="tang"){ctx.fillStyle="#E8D9A8";ctx.fillRect(dp.sx-0.7*kd,dy-1.3*kd,1.4*kd,2*kd);ctx.strokeStyle=era.fg;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(dp.sx,dy-1.1*kd);ctx.quadraticCurveTo(dp.sx+0.4*kd,dy-0.5*kd,dp.sx-0.3*kd,dy-0.1*kd);ctx.stroke()}
+  else if(era.key=="egy"){ctx.strokeStyle="#B98C3E";ctx.lineWidth=2;ctx.beginPath();ctx.arc(dp.sx,dy,0.7*kd,0,7);ctx.moveTo(dp.sx-0.7*kd,dy);ctx.lineTo(dp.sx-1.5*kd,dy+0.3*kd);ctx.stroke()}
+  else if(era.key=="rome"){for(var i=0;i<12;i++){ctx.fillStyle=["#8C4A3A","#C8B88A","#5E6A8C"][i%3];ctx.fillRect(dp.sx-1.2*kd+(i%4)*0.6*kd,dy-0.45*kd-Math.floor(i/4)*0.55*kd,0.5*kd,0.45*kd)}}
+  else if(era.key=="now"){var pu2=0.7+0.3*Math.sin(tSec*4);ctx.fillStyle="rgba(120,200,255,"+(0.45*pu2)+")";ctx.fillRect(dp.sx-1.1*kd,dy-0.75*kd,2.2*kd,1.3*kd)}
+  else if(era.key=="fut"){ctx.strokeStyle="rgba(127,231,255,.85)";ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(dp.sx,dy,0.85*kd,0,7);ctx.stroke();ctx.beginPath();ctx.arc(dp.sx,dy,0.4*kd,0,7);ctx.stroke()}
+  else{ctx.fillStyle="#6E4A2E";ctx.beginPath();ctx.moveTo(dp.sx-1*kd,dy+0.8*kd);ctx.lineTo(dp.sx,dy-0.8*kd);ctx.lineTo(dp.sx+1*kd,dy+0.8*kd);ctx.closePath();ctx.fill()}
+  ctx.restore()}
+ /* 火塘 */
+ var fp=project(-2.2,15.3);
+ if(fp)P.fire(ctx,fp.sx,fp.sy,fp.s*1.2,"#5F5E5A",tSec);
+ /* 桌子与屋主人的礼物 */
+ nearGiftDraw();
+ /* 主人 */
+ var hp=project(0.1,14);
+ if(hp){var hc=mix(h.host.robe||era.fg,"#0B0B12",(1-dl)*0.7);
+  person(ctx,hp.sx,hp.sy,hp.s,hc,"stand",tSec,{robe:hc,hat:h.host.hat,dl:dl,face:h.host.face||"smile"});
+  var d3=Math.hypot(0.1-P0.x,14-P0.z);
+  ctx.font="11px 'Segoe UI','Microsoft YaHei',sans-serif";ctx.textAlign="center";
+  ctx.fillStyle="rgba(255,255,255,.75)";ctx.fillText(t2(h.host.n),hp.sx,hp.sy-26*hp.s);
+  if(d3<4){label(hp.sx,hp.sy-34*hp.s,L("按 T 交谈","Press T to talk"),"#7fe7ff");nearNpc=h.host;lastNpcHit={npc:h.host,sx:hp.sx,sy:hp.sy,s:hp.s}}}
+ /* 出门提示 */
+ if(P0.z<11.8){ctx.font="12px 'Segoe UI','Microsoft YaHei',sans-serif";ctx.textAlign="center";ctx.fillStyle="rgba(250,199,117,.9)";ctx.fillText(L("门口就在你身后 · 按 F 出门","The door is behind you · Press F to step out"),W/2,H-46)}
+}
+/* ================= 对话系统 ================= */
+var dlgOpen=false,dlgNpc=null,dlgHist=[],typeTimer=null;
+function fmtClock(){
+ var hr=(6+dayPhase*24)%24,hh=Math.floor(hr),mm=Math.floor((hr-hh)*60);
+ return(hh<10?"0":"")+hh+":"+(mm<10?"0":"")+mm}
+function dlgOpenNpc(npc){
+ dlgOpen=true;dlgNpc=npc;dlgHist=[];
+ $("dlg").style.display="flex";$("dlgName").textContent=t2(npc.n)+" · "+t2(era.name);
+ $("dlgLog").innerHTML="";
+ var meet=store.npcMeet[npc.n]||0;store.npcMeet[npc.n]=meet+1;saveStore();
+ var greet=(meet>0?L("我们又见面了。","We meet again. "):"")+t2(npc.self);
+ var qs=store.qstate[era.key]||0;
+ if(npc.q&&qs==0&&!store.qrew["q_"+era.key]){greet+=L("……对了，能帮我个忙吗？","…By the way, could you help me? ")+t2(npc.q.des)+L("（回复「好」就当答应了）"," (Reply \"yes\" to accept)")}
+ else if(npc.q&&qs==1){greet+=L("那个东西找到了吗？找到发光的东西，按空格收好，带回来给我。","Found it yet? Pick up the glowing thing with Space and bring it back to me.")}
+ else if(npc.q&&qs==2&&!store.qrew["q_"+era.key]){store.qrew["q_"+era.key]=npc.q.rw;saveStore();renderPocket();sfxQuest();
+  greet=t2(npc.q.rwline)+L("　【获得馈赠：","　[Gift received: ")+t2(npc.q.rw)+L("】","]")}
+ else if(npc.q&&qs==2&&meet>1){greet+=L("上次多亏了你，我一直记着呢。","I still remember your kindness last time.")}
+ dlgSay(greet);$("dlgIn").focus();
+}
+function dlgSay(text){
+ var m=document.createElement("div");m.className="m npc";$("dlgLog").appendChild(m);
+ clearInterval(typeTimer);var i=0;
+ typeTimer=setInterval(function(){m.textContent=text.slice(0,++i);$("dlgLog").scrollTop=1e6;if(i>=text.length)clearInterval(typeTimer)},22);
+ dlgHist.push({role:"npc",text:text});
+}
+function dlgMe(text){
+ var m=document.createElement("div");m.className="m me";m.textContent=text;$("dlgLog").appendChild(m);$("dlgLog").scrollTop=1e6;
+ dlgHist.push({role:"me",text:text});
+}
+function dlgClose(){dlgOpen=false;$("dlg").style.display="none";clearInterval(typeTimer)}
+$("dlgX").addEventListener("click",dlgClose);
+$("dlgSend").addEventListener("click",dlgSubmit);
+$("dlgIn").addEventListener("keydown",function(e){if(e.key=="Enter")dlgSubmit()});
+function dlgSubmit(){
+ var t=$("dlgIn").value.trim();if(!t)return;
+ $("dlgIn").value="";dlgMe(t);
+ /* 委托任务的接受判定 */
+ if(dlgNpc&&dlgNpc.q&&(store.qstate[era.key]||0)==0&&!store.qrew["q_"+era.key]&&/(好|行|当然|愿意|没问题|可以|好啊|走吧|ok|yes|sure|deal|of course)/i.test(t)){
+  store.qstate[era.key]=1;saveStore();sfxQuest();
+  dlgSay(L("太好了！它就遗落在这幅画的某处——走近那些发光的东西，按空格拾取。我等你的好消息。","Wonderful! It lies somewhere in this painting — walk close to the glowing thing and press Space to pick it up. I will wait for your good news."));
+  return;
+ }
+ aiReply(dlgNpc,t).then(function(r){dlgSay(r)});
+}
+/* 本地应答引擎：无需联网；若设置 window.AI_URL 将优先请求真实大模型接口 */
+window.AI_URL=""; /* 留空 = 内置离线应答引擎；填入接口地址才会联网 */
+function localReply(npc,text){
+ var t=text.trim(),tl=t.toLowerCase();
+ var en=lang=="en"||(/^[a-z0-9 .,!?'"\-]+$/.test(tl)&&/[a-z]/.test(tl));
+ var eN=t2(era.name),eY=t2(era.year),nN=t2(npc.n),nS=t2(npc.self),nL=t2(npc.like);
+ var hour=fmtClock();
+ var isQ=/？|\?|什么|为什么|怎么|如何|谁|哪|吗|呢|what|why|how|who|where|when|can you|do you|are you/.test(tl);
+ var lore=ERA_LORE[era.key]||[];
+ var food={pre:"烤肉和采来的果子——有火，就有好日子",egy:"麦饼、啤酒、无花果，都是尼罗河赏的",
+  rome:"面包、橄榄、葡萄酒，讲究人还要浇一勺蜂蜜",tang:"胡饼、汤饼、蒸糕，再烫一壶酒",
+  now:"这个点？深夜摊子的炒粉最实在",fut:"营养膏能模拟出红烧肉的味道——信我，模拟得很像"}[era.key]||"家常饭";
+ var rules=[
+  {re:/(你好|您好|hi|hello|嗨|早上好|晚上好|下午好|hey)/,zh:"你好啊，远方的旅人。这"+(hour<"12"?"清晨":"夜晚")+"风不错，陪我说说话。",en:"Hello, traveler from afar. Fine "+(hour<"12"?"morning":"night")+" here in "+eN+". Stay and talk a while."},
+  {re:/(你是谁|你叫什么|你叫|who are you|your name|介绍.*自己|名字)/,zh:"我叫"+npc.n+"。"+npc.self+"你呢？从哪个年代来？",en:"They call me "+nN+". "+nS+" And you — which century are you from?"},
+  {re:/(这是哪|这是哪里|哪里|where|这儿|此地|什么地方|这是什么地方)/,zh:"这里是"+era.name+"，"+era.year+"。抬头看的这片天，和你来的地方不是同一片。",en:"This is "+eN+", "+eY+" The sky above is not the same one you came from."},
+  {re:/(几点|时间|time|现在几|clock|多晚|现在.*点)/,zh:"画里的钟停在 "+hour+"。太阳走了又会回来——除非你按 P 暂停，或按 R 让时间倒流。",en:"The clock here reads "+hour+". The sun always returns — unless you press P to pause it, or R to rewind it."},
+  {re:/(天气|下雨|下雪|风沙|weather|rain|snow|storm)/,zh:weather=="rain"?"下雨了？"+(era.key=="egy"?"这儿居然下雨，尼罗河都要高兴了。":"雨天路滑，走路当心。"):weather=="snow"?"下雪了……多少年没见过这么安静的雪了。":weather=="sand"?"起风沙了，眯着眼也得赶路，习惯就好。":"今天天气不错，"+npc.like+"的时候，天气也是这样。",en:weather=="rain"?"Rain. The river will be pleased.":"Fine weather — at least for now."},
+  {re:/(吃|饭|饿|food|eat|hungry|早餐|晚餐|点心)/,zh:food+"。你要是饿了，"+(era.key=="now"?"街角的摊子还没收。":"屋里灶上总有热的。"),en:"Food? We eat simply here. Stay, there is always something warm."},
+  {re:/(时代|历史|朝代|era|history|讲讲|说说|故事|story|about)/,zh:pick(lore),en:pick(["Every stone here has a story — most of them are older than my family name.",""+era.year+". Hard to explain a whole era; easier to live one day of it."])},
+  {re:/(收集|捡|东西|item|collect|拾取|口袋|pocket)/,zh:"附近散落着些老物件，走近了会发光，按空格就能收进口袋。有个说法：从每个时代各带走一件，时间尽头那扇门会为你亮起来。",en:"Old things lie scattered nearby — they glow when you get close. Press Space to pocket them."},
+  {re:/(喜欢|爱好|like|love|最爱|爱)/,zh:"我最喜欢"+npc.like+"。说不上为什么——有些喜欢不需要理由。",en:"What I love most? "+nL+". Hard to explain."},
+  {re:/(再见|bye|拜拜|告辞|goodbye|走了)/,zh:"这就走了？也好。愿你找到你要找的那扇门。",en:"Leaving already? May you find the door you are looking for."},
+  {re:/(谢谢|thanks|thank|多谢)/,zh:"不必客气。这年头，善意是能穿越时间的。",en:"You are welcome. Kindness travels through time, you know."},
+  {re:/(门|door|任意门|穿越|走廊|corridor)/,zh:"门？他压低声音：「走廊尽头的门后是时间之外。有人进去过，没人回来描述过。」",en:"The door? *lowers voice* Beyond the corridor lies Beyond-Time. Some entered; none returned to describe it."},
+  {re:/(屋|家里|home|house|做客|进门|进屋)/,zh:"想进屋坐坐？找一扇门口亮着暖灯的门，按 F 推门就是。主人家烧着热茶等着呢。",en:"Look for the door with a warm glowing lamp — press F to step in. The kettle is always on."},
+  {re:/(动物|猫|狗|鹿|骆驼|马|鹤|鸟|pet|animal|cat|dog|deer|camel)/,zh:"这附近的动物都温顺。慢慢走近，按 G 伸手——摸过一次，它就记得你，会一直跟着你走。",en:"The animals here are gentle. Press G to reach out — feed them once and they will follow you."},
+  {re:/(骑|ride|坐|马背|骆驼背|mount)/,zh:riding?"骑稳了！"+riding.n+"走惯了远路，比你的两条腿快多了。":"看见马或骆驼了吗？走近按 G 就能骑上去，再按 G 下来。",en:"Horses and camels around here can carry you. Press G to mount."},
+  {re:/(任务|帮忙|quest|help|委托|托付|求助)/,zh:npc.q?(store.qstate[era.key]==2?"你帮过我了，我记着呢。":"我确实有一件难事："+npc.q.des):"我的日子平淡得很，暂时没什么要人帮忙的。倒是路上那些发光的东西，去了就是你的。",en:npc.q?"I do have one favor to ask…":"Nothing troubles me today. But those glowing things on the road — they are yours to take."},
+  {re:/(拍照|photo|picture|合影|照相|拍照模式)/,zh:"想留个影？按 H 进拍照模式，这"+(hour<"12"?"晨光":"夜色")+"配这张脸，绝了。",en:"Press H for the camera mode. This light deserves a picture."},
+  {re:/(笑话|joke|搞笑|逗|有趣的事)/,zh:"笑话……好吧。去年冬天我把船桨当柴烧了，开春才发现船还拴在岸边。",en:"A joke? Fine — last winter I burned an oar for firewood. In spring I found the boat, still tied ashore."},
+  {re:/(怕|害怕|恐惧|afraid|fear|scared)/,zh:"怕？怕黑，怕旱，怕孩子病。可火堆一亮起来，怕就退到光外面去了。你呢，一个能穿越时间的人，还会怕什么？",en:"I fear the dark, the drought, a sick child. But fire pushes fear back beyond the light."},
+  {re:/(梦想|理想|dream|wish|愿望|希望)/,zh:"梦想？"+(era.key=="fut"?"我把梦存进了记忆库，醒来接着做。":"想把"+npc.like+"再多看一次，就这个。梦小，但够暖。"),en:"Dreams? Small ones keep best: another morning, another "+nL+"."},
+  {re:/(家|家人|family|父母|mother|father|娘|爹)/,zh:"家人都在这片土地上。日子苦，但围着火的时候，苦就变成烟飘走了。",en:"My family works this land. Hard days — but around the fire, hardship turns to smoke and drifts away."},
+  {re:/(钱|money|工资|贵|便宜)/,zh:"钱？"+(era.key=="tang"?"开元通宝，一枚买一个胡饼。":era.key=="now"?"扫一下码的事——你们那儿还在用硬币？":"够用就好。这时代最贵的东西不是钱能买的。"),en:"Money comes and goes. The expensive things here are not for sale."},
+  {re:/(音乐|music|歌|song|唱|跳舞|dance)/,zh:"会哼几句老调子。节庆的时候全"+(era.key=="tang"?"坊":"村子")+"都跳舞——你要是赶上一次，忘不掉的。",en:"I hum old tunes. On festival days, everyone dances. You would not forget it."},
+  {re:/(ai|机器人|未来|future|robot)/,zh:"未来？我只管眼前这一亩三分地。不过听说……有人从比你想象的更远的地方来。",en:"The future? I mind my own patch of ground. But they say someone came from farther than you imagine."}];
+ for(var i=0;i<rules.length;i++){if(rules[i].re.test(tl)){
+  var r2=en?rules[i].en:rules[i].zh;
+  if(r2)return r2;
+ }}
+ /* 兜底：承认听不全，但给点本时代的真东西 */
+ var fb=en?pick(["Interesting question. The wind here carries many words, few answers.",
+   "Hmm. Ask the stones — they have been here longer than me.",
+   "I have wondered about that too, traveler. Maybe the answer changes with the century.",
+   "That, my friend, depends on which side of the door you ask it.",
+   "You speak strangely — but kindly. That is enough for me."])
+  :pick(["嗯……这个问题，连祭司也要想上一想。",
+   "风把你的话吹散了一半，不过我大概懂了。",
+   "你的口音很奇怪，像是很远很远的地方来的。",
+   "这话我记下了，等太阳再升起一轮，我再想明白。",
+   "每个时代的人都会问类似的问题——答案各有各的模样。"]);
+ if(isQ){if(en)fb+=" "+pick(["You know, ","Here is something true about this place: ","Between us — "])+(ERA_LORE_EN[era.key]||"");
+  else if(lore.length)fb+=pick([" 说到这个——"+pick(lore)," 我们这儿有个说法："+pick(lore)," 不过说真的，"+pick(lore)])}
+ return fb;
+}
+async function aiReply(npc,text){
+ if(window.AI_URL){
+  try{
+   var r=await fetch(window.AI_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({npc:npc.n,era:era.name,year:era.year,message:text,history:dlgHist})});
+   var j=await r.json();
+   if(j&&j.reply)return j.reply;
+  }catch(e){}
+ }
+ return localReply(npc,text);
+}
+/* ================= 口袋面板 ================= */
+function renderPocket(){
+ var el=$("pkList"),html="",n=0;
+ ERAS.forEach(function(e){
+  var arr=(store.items[e.key]||[]).map(function(x){return t2(x)});n+=store.items[e.key]?store.items[e.key].length:0;
+  if(arr.length)html+='<div class="pe"><span>'+t2(e.name)+'</span>'+L("：",": ")+arr.join(L("、",", "))+"</div>"});
+ var rw=[];for(var k in store.qrew)rw.push(t2(store.qrew[k]));
+ if(rw.length)html+='<div class="pe"><span>'+L("特别馈赠","Special Gifts")+'</span>'+L("：",": ")+rw.join(L("、",", "))+"</div>";
+ el.innerHTML=html||L("还空空如也，去画里捡点什么吧。","Empty as the void — go pick something up in the paintings.");
+ el.className=html?"":"empty";
+}
+$("pkBtn").addEventListener("click",function(){renderPocket();$("pocketPanel").style.display=$("pocketPanel").style.display=="block"?"none":"block"});
+$("pkBtn2").addEventListener("click",function(){renderPocket();$("pocketPanel").style.display=$("pocketPanel").style.display=="block"?"none":"block"});
+updPk();
+/* ================= 结局之门 ================= */
+function openEnd(){
+ var n=itemCount();
+ $("endSub").textContent=n>=12?L("你几乎把每个时代都摸了一遍——门认得你了。","You have brushed nearly every era — the door knows you now."):n>=6?L("你带回了足够的时光信物，门为你打开。","You brought back enough tokens of time. The door opens for you."):L("你只带回了 ","You brought back only ")+n+L(" 件信物。还有 "," tokens. ")+(TOTAL-n)+L(" 件遗落在各个时代的画里……不过门还是开了。"," more still lie scattered in the paintings of each era… But the door opens anyway.");
+ var g="";ERAS.forEach(function(e){
+  var arr=store.items[e.key]||[];
+  g+='<div class="eg">'+t2(e.name)+" "+arr.length+"/4</div>"});
+ $("endGrid").innerHTML=g;
+ $("end").style.display="flex";
+}
+$("endClose").addEventListener("click",function(){$("end").style.display="none"});
+/* ================= 主循环 ================= */
+function loop(now){
+ var dt=Math.min((now-lastT)/1000,0.05);lastT=now;tSec+=dt;
+ if(sceneOpen){
+  if(!paused&&!dlgOpen)dayPhase+=dayDir*dt/100;
+  /* 移动 */
+  var moving=false;
+  if(!dlgOpen){
+   var sp=5.5*dt*(riding?2.7:1);
+   var fx=Math.sin(yaw),fz=Math.cos(yaw); /* 视线方向 */
+   if(keys["w"]||keys["arrowup"]){P0.x+=fx*sp;P0.z+=fz*sp;moving=true}
+   if(keys["s"]||keys["arrowdown"]){P0.x-=fx*sp;P0.z-=fz*sp;moving=true}
+   if(keys["a"]){P0.x-=fz*sp*0.8;P0.z+=fx*sp*0.8;moving=true}
+   if(keys["d"]){P0.x+=fz*sp*0.8;P0.z-=fx*sp*0.8;moving=true}
+   if(keys["arrowleft"])yawT-=1.9*dt;
+   if(keys["arrowright"])yawT+=1.9*dt;
+   pitchT=clamp(pitchT,-0.42,0.42);
+   pitch+=(pitchT-pitch)*0.12;
+   yawT=Math.atan2(Math.sin(yawT),Math.cos(yawT));
+   yaw+=Math.atan2(Math.sin(yawT-yaw),Math.cos(yawT-yaw))*0.12;
+   if(inside){P0.x=clamp(P0.x,-2.6,2.6);P0.z=clamp(P0.z,10.4,15.4)}
+   else{P0.x=clamp(P0.x,-11,11);P0.z=clamp(P0.z,2,52)}
+  }
+  horizon=H*0.55+pitch*H*0.7; /* 俯仰=整个地平线上下移动 */
+  /* 行走镜头晃动 */
+  if(moving&&!paused){bobP+=dt*(riding?11:8);bobY=Math.sin(bobP)*(riding?4.5:3)}
+  else bobY*=0.85;
+  drawScene(dt);
+  /* 爱心粒子 */
+  for(var i2=hearts.length-1;i2>=0;i2--){var hh2=hearts[i2];hh2.t+=dt;hh2.y-=dt*26;
+   if(hh2.t>hh2.d){hearts.splice(i2,1);continue}
+   ctx.save();ctx.globalAlpha=1-hh2.t/hh2.d;ctx.fillStyle="#E77FA0";ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText("♥",hh2.x,hh2.y);ctx.restore()}
+  $("scClock").textContent=L("画中时刻 ","In-painting time ")+fmtClock()+(paused?L("（已暂停）"," (paused)"):dayDir<0?L("（倒流中）"," (rewinding)"):"");
+ }
+ requestAnimationFrame(loop);
+}
+function drawScene(dt){
+ if(inside){drawInterior();return}
+ var dl=Math.max(0,Math.sin((dayPhase%1)*Math.PI*2));
+ if(weather=="rain")dl*=0.62;else if(weather=="snow")dl*=0.85;else if(weather=="sand")dl*=0.72;
+ /* 天空 */
+ ctx.fillStyle=mix(era.sky[0],era.sky[1],dl);ctx.fillRect(0,0,W,H);
+ ctx.save();ctx.globalAlpha=(1-dl)*0.9;ctx.fillStyle="#fff";
+ for(var i=0;i<stars.length;i++){ctx.beginPath();ctx.arc(stars[i][0]*W,stars[i][1]*H,stars[i][2],0,7);ctx.fill()}
+ ctx.restore();
+ var df=dayPhase%1;
+ if(df<0.5){var pr=df*2;ctx.fillStyle="#FAC775";ctx.beginPath();ctx.arc(W*(0.12+0.76*pr),horizon-50-Math.sin(pr*Math.PI)*(horizon-120),16,0,7);ctx.fill()}
+ else{var q=(df-0.5)*2;ctx.save();ctx.globalAlpha=0.92;ctx.fillStyle="#D3D1C7";ctx.beginPath();ctx.arc(W*(0.12+0.76*q),horizon-50-Math.sin(q*Math.PI)*(horizon-120),12,0,7);ctx.fill();ctx.restore()}
+ /* 云 */
+ clouds.forEach(function(cl){cl.x+=cl.v*dt*3;if(cl.x>1.2)cl.x=-0.25;
+  var cx=cl.x*W,cy=cl.y*H,cs=cl.s*(W*0.05);
+  ctx.save();ctx.globalAlpha=0.16+0.3*dl;ctx.fillStyle=dl>0.35?"#FFFFFF":"#44506B";
+  ctx.beginPath();ctx.ellipse(cx,cy,cs,cs*0.38,0,0,7);ctx.ellipse(cx+cs*0.7,cy+cs*0.1,cs*0.65,cs*0.3,0,0,7);ctx.ellipse(cx-cs*0.7,cy+cs*0.12,cs*0.6,cs*0.28,0,0,7);ctx.fill();ctx.restore()});
+ /* 飞鸟 */
+ ctx.strokeStyle="rgba(255,255,255,"+(0.25+dl*0.45)+")";ctx.lineWidth=1.4;
+ birds.forEach(function(b){b.x+=b.v*dt*8;if(b.x>1.15)b.x=-0.15;
+  var bx=b.x*W,by=b.y*H+Math.sin(tSec*2+b.x*9)*6;
+  ctx.beginPath();ctx.moveTo(bx-5,by);ctx.quadraticCurveTo(bx,by-4,bx+0,by);ctx.quadraticCurveTo(bx+5,by-4,bx+5,by);ctx.stroke()});
+ /* 地面 + 透视网格 */
+ var gb=mix(era.gnd[0],era.gnd[1],dl);
+ ctx.fillStyle=gb;ctx.fillRect(0,horizon,W,H-horizon);
+ var gc=mix(mix(era.gnd[1],era.gnd[0],dl),"#000000",0.22);
+ ctx.strokeStyle=gc;ctx.globalAlpha=0.5;ctx.lineWidth=1;
+ for(var gx=-14;gx<=14;gx+=2){
+  var f=project(gx,60),n2=project(gx,1.8);
+  if(f&&n2){ctx.beginPath();ctx.moveTo(f.sx,f.sy);ctx.lineTo(n2.sx,n2.sy);ctx.stroke()}}
+ for(var gz=2.4;gz<70;gz*=1.28){
+  var r2=project(0,gz);if(r2){ctx.beginPath();ctx.moveTo(0,r2.sy);ctx.lineTo(W,r2.sy);ctx.stroke()}}
+ ctx.globalAlpha=1;
+ /* 地表细节：草叶/砂纹 */
+ var gd=(era.key=="pre"||era.key=="tang")?1:0;
+ ctx.strokeStyle=mix(mix(era.gnd[1],era.gnd[0],dl),"#000000",0.3);ctx.lineWidth=1;
+ for(var gi=0;gi<46;gi++){
+  var gxr=(rnd(gi*7+1)-0.5)*26,gzr=3.2+rnd(gi*11+3)*40;
+  var gp=project(gxr,gzr);if(!gp)continue;
+  ctx.save();ctx.globalAlpha=clamp(1.2-gzr/40,0.15,0.6);
+  if(gd){var gh=(2+rnd(gi)*3)*gp.s;ctx.beginPath();ctx.moveTo(gp.sx,gp.sy);ctx.quadraticCurveTo(gp.sx+2*gp.s,gp.sy-gh,gp.sx+4*gp.s,gp.sy);ctx.stroke()}
+  else{ctx.beginPath();ctx.moveTo(gp.sx-3*gp.s,gp.sy);ctx.lineTo(gp.sx+3*gp.s,gp.sy);ctx.stroke()}
+  ctx.restore()}
+ /* 远处地平线雾带 */
+ ctx.save();ctx.globalAlpha=0.25;ctx.fillStyle=era.sky[1];ctx.fillRect(0,horizon-3,W,7);ctx.restore();
+ /* 收集物 & NPC & 建筑统一按深度排序绘制 */
+ var draws=[];
+ era.props.forEach(function(p2){draws.push({z:p2[2],fn:function(){drawProp(p2,dl)}})});
+ if(era.far)era.far.forEach(function(p2){draws.push({z:p2[2],fn:function(){drawProp(p2,dl)}})});
+ var cCol=mix(era.fg,"#0B0B12",(1-dl)*0.8);
+ var myItems=store.items[era.key]||[];
+ nearItem=null;var bestIt=1e9;
+ era.items.forEach(function(it,ii){
+  if(myItems.indexOf(it.name)>=0)return;
+  draws.push({z:it.z,fn:function(){
+   var p3=project(it.x,it.z);if(!p3)return;
+   var d2=Math.hypot(it.x-P0.x,it.z-P0.z);
+   var gl=0.25+0.2*Math.sin(tSec*3+ii)+((d2<5)?0.35:0);
+   ctx.save();ctx.globalAlpha=gl;ctx.fillStyle="#FAC775";ctx.beginPath();ctx.arc(p3.sx,p3.sy-6*p3.s,14*p3.s,0,7);ctx.fill();ctx.restore();
+   ctx.save();ctx.translate(p3.sx,p3.sy-6*p3.s);var isc=p3.s*1.1;ICONS[it.icon](isc);ctx.restore();
+   if(d2<5&&Math.abs(p3.sx-W/2)<W*0.4){label(p3.sx,p3.sy-18*p3.s,t2(it.name)+L(" · 按空格拾取"," · Space to pick up"),"#FAC775");
+    if(d2<bestIt){bestIt=d2;nearItem=it}}
+  }})});
+ nearNpc=null;var bestNpc=1e9;lastNpcHit=null;
+ era.npcs.forEach(function(n3,ni){
+  var wx=n3.x+Math.sin(tSec*0.22+ni*2.1)*0.8;
+  draws.push({z:n3.z,fn:function(){
+   var p3=project(wx,n3.z);if(!p3)return;
+   var bob=Math.sin(tSec*1.6+ni)*1.5*p3.s;
+   var cc=mix(n3.robe||era.fg,"#0B0B12",(1-dl)*0.8);
+   person(ctx,p3.sx,p3.sy+bob,p3.s,cc,"stand",tSec,{robe:cc,hat:n3.hat,hold:n3.hold,dl:dl,face:n3.face});
+   var d2=Math.hypot(wx-P0.x,n3.z-P0.z);
+   ctx.font="11px 'Segoe UI','Microsoft YaHei',sans-serif";ctx.textAlign="center";
+   ctx.fillStyle="rgba(255,255,255,.75)";ctx.fillText(t2(n3.n),p3.sx,p3.sy-26*p3.s+bob);
+   if(d2<8&&Math.abs(p3.sx-W/2)<W*0.5){label(p3.sx,p3.sy-34*p3.s,L("按 T 或点击对话","Press T or click to talk"),"#7fe7ff");
+    if(d2<bestNpc){bestNpc=d2;nearNpc=n3;lastNpcHit={npc:n3,sx:p3.sx,sy:p3.sy,s:p3.s}}}
+  }})});
+ /* 可互动的动物（可跟随、可骑乘） */
+ nearCreature=null;var bestC=1e9;
+ (era.creatures||[]).forEach(function(cr,ci){
+  if(cr===riding)return;
+  var wx,wz2;
+  if(cr._follow){
+   if(cr.fx===undefined){cr.fx=cr.x;cr.fz=cr.z}
+   var fg=Math.min(dt*1.4,0.5);
+   cr.fx+=((P0.x-0.9)-cr.fx)*fg;cr.fz+=((P0.z-1.3)-cr.fz)*fg;
+   wx=cr.fx;wz2=cr.fz;
+  }else{wx=cr.x+Math.sin(tSec*0.3+ci*2.4)*1.1;wz2=cr.z+Math.cos(tSec*0.23+ci*1.7)*0.7}
+  draws.push({z:wz2,fn:function(){
+   var p3=project(wx,wz2);if(!p3)return;
+   var c2=mix(era.fg,"#0B0B12",(1-dl)*0.8);
+   ANIMALS[cr.a](ctx,p3.sx,p3.sy,p3.s,c2,tSec,dl);
+   var d2=Math.hypot(wx-P0.x,wz2-P0.z);
+   if(d2<6&&Math.abs(p3.sx-W/2)<W*0.5){
+    label(p3.sx,p3.sy-22*p3.s,t2(cr.n)+(cr.ride&&!riding?L(" · 按 G 骑乘"," · Press G to ride"):L(" · 按 G 互动"," · Press G to interact")),"#7fe7ff");
+    if(d2<bestC){bestC=d2;nearCreature={cr:cr,sx:p3.sx,sy:p3.sy}}}
+  }})});
+ /* 时光连动：埋下/挖出泥球 */
+ nearDig=null;
+ var DIGS={pre:{x:9,z:28,label:"时光土堆"},now:{x:-9,z:30,label:"翻新的土坑"}};
+ var dg=DIGS[era.key];
+ if(dg){var dgAct=era.key=="pre"?(!store.tcLink):(!store.tcLink);
+  draws.push({z:dg.z,fn:function(){
+   var p3=project(dg.x,dg.z);if(!p3)return;
+   ctx.fillStyle=mix(era.gnd[1],"#3A2E1A",0.4);ctx.beginPath();ctx.ellipse(p3.sx,p3.sy,10*p3.s,3.4*p3.s,0,0,7);ctx.fill();
+   if(era.key=="pre"){ctx.fillStyle=mix(era.fg,"#0B0B12",0.3);ctx.beginPath();ctx.ellipse(p3.sx,p3.sy-3*p3.s,5*p3.s,2.4*p3.s,0,0,7);ctx.fill()}
+   var d2=Math.hypot(dg.x-P0.x,dg.z-P0.z);
+   if(d2<5){var lbl=dgAct?(t2(dg.label)+L(" · 按 G "," · Press G ")+(era.key=="pre"?L("埋下时光泥球","to bury a clay ball of time"):L("挖挖看","to dig"))):(t2(dg.label)+L(" · "," · ")+(era.key=="pre"?L("泥球已经埋下了","the clay ball is buried"):L("坑里空空的","the pit is empty")));
+    label(p3.sx,p3.sy-12*p3.s,lbl,"#FAC775");
+    if(dgAct)nearDig=dg}
+  }})}
+ /* NPC 委托任务物品 */
+ questItem=null;
+ var qnpc=null;era.npcs.forEach(function(nn){if(nn.q)qnpc=nn});
+ if(qnpc&&(store.qstate[era.key]||0)==1){
+  var eIdx=ERAS.indexOf(era);
+  var qi={x:(rnd(eIdx*3+1)*14-7),z:16+rnd(eIdx*5+2)*18,icon:qnpc.q.icon,name:qnpc.q.it,_quest:true,_npc:qnpc.n};
+  questItem=qi;
+  draws.push({z:qi.z,fn:function(){
+   var p3=project(qi.x,qi.z);if(!p3)return;
+   var d2=Math.hypot(qi.x-P0.x,qi.z-P0.z);
+   var gl=0.3+0.2*Math.sin(tSec*3.5)+((d2<5)?0.35:0);
+   ctx.save();ctx.globalAlpha=gl;ctx.fillStyle="#7fe7ff";ctx.beginPath();ctx.arc(p3.sx,p3.sy-6*p3.s,15*p3.s,0,7);ctx.fill();ctx.restore();
+   ctx.save();ctx.translate(p3.sx,p3.sy-6*p3.s);ICONS[qi.icon](p3.s*1.1);ctx.restore();
+   if(d2<5&&Math.abs(p3.sx-W/2)<W*0.4){label(p3.sx,p3.sy-20*p3.s,t2(qi.name)+L(" · 任务物品，按空格拾取"," · Quest item, Space to pick up"),"#7fe7ff");
+    if(!nearItem){nearItem=qi;lastItemHit={it:qi,sx:p3.sx,sy:p3.sy-6*p3.s,s:p3.s}}}
+  }})}
+ /* 可进屋的房子 */
+ nearHouse=null;var bestH=1e9;
+ (era.houses||[]).forEach(function(h){
+  draws.push({z:h.z,fn:function(){
+   var p3=project(h.x,h.z);if(!p3)return;
+   var c2=mix(era.fg,"#0B0B12",(1-dl)*0.8);
+   P[h.prop](ctx,p3.sx,p3.sy,p3.s*1.5,c2,tSec,dl,h.sd||3);
+   var pu=0.5+0.5*Math.sin(tSec*3);
+   ctx.save();ctx.globalAlpha=0.3+0.4*pu;ctx.fillStyle="#FAC775";ctx.beginPath();ctx.arc(p3.sx,p3.sy-4*p3.s,3*p3.s,0,7);ctx.fill();ctx.restore();
+   var d2=Math.hypot(h.x-P0.x,h.z-P0.z);
+   if(d2<5&&Math.abs(p3.sx-W/2)<W*0.5){label(p3.sx,p3.sy-32*p3.s,t2(h.label)+L(" · 按 F 进屋"," · Press F to enter"),"#FAC775");
+    if(d2<bestH){bestH=d2;nearHouse=h}}
+  }})});
+ draws.sort(function(a,b){return b.z-a.z});
+ draws.forEach(function(d2){d2.fn()});
+ /* 天气层 */
+ if(weather=="rain"){
+  ctx.save();ctx.strokeStyle="rgba(170,200,240,.4)";ctx.lineWidth=1;
+  drops.forEach(function(dr){dr.y+=dr.v*dt*1.6;if(dr.y>1.05){dr.y=-0.05;dr.x=Math.random()}
+   var dx=dr.x*W,dy=dr.y*H;
+   ctx.beginPath();ctx.moveTo(dx,dy);ctx.lineTo(dx-3,dy+dr.l*H);ctx.stroke()});
+  ctx.restore();
+  ctx.fillStyle="rgba(15,25,45,0.15)";ctx.fillRect(0,0,W,H);
+ }else if(weather=="snow"){
+  ctx.save();ctx.fillStyle="rgba(240,245,255,.8)";
+  flakes.forEach(function(fl){fl.y+=fl.v*dt;if(fl.y>1.05){fl.y=-0.05;fl.x=Math.random()}
+   var fx=(fl.x+Math.sin(tSec+fl.ph)*0.01)*W,fy=fl.y*H;
+   ctx.beginPath();ctx.arc(fx,fy,fl.s,0,7);ctx.fill()});
+  ctx.restore();
+  ctx.fillStyle="rgba(190,205,225,0.1)";ctx.fillRect(0,0,W,H);
+ }else if(weather=="sand"){
+  ctx.fillStyle="rgba(200,150,60,0.15)";ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.strokeStyle="rgba(230,190,110,.3)";ctx.lineWidth=1.5;
+  for(var si=0;si<6;si++){var sy2=(0.55+((tSec*0.12+si*0.17)%0.45))*H;
+   ctx.beginPath();ctx.moveTo(0,sy2);ctx.lineTo(W*0.3,sy2-4);ctx.stroke()}
+  ctx.restore();
+ }
+}
+function drawProp(p2,dl){
+ var t=p2[0],x=p2[1],z=p2[2],seed=p2[3]||1;
+ var p3=project(x,z);if(!p3)return;
+ var c=mix(era.fg,"#0B0B12",(1-dl)*0.8);
+ var fn=P[t];if(!fn)return;
+ var fog=clamp(1.35-z/48,0.42,1);
+ ctx.save();ctx.globalAlpha=fog;
+ fn(ctx,p3.sx,p3.sy,p3.s,c,tSec,dl,seed);
+ ctx.restore();
+}
+/* ================= 语言切换 ================= */
+function applyLang(){
+ HINT_TEXT=L("W A S D 移动 · 鼠标转视角（可360°转身+抬头低头）· 空格 拾取 · T 对话 · G 互动 / 骑乘 · F 进屋 · P 暂停 · R 倒流 · H 拍照 · M 音效","W A S D move · mouse to look (full 360° turn + look up/down) · Space pick up · T talk · G interact / ride · F enter house · P pause · R rewind · H photo · M sound");
+ $("corHint").textContent=L("滚动滚轮 / 上下拖动 前进 · 点击画框走进那个时代 · 尽头有门","Scroll wheel / drag to walk the corridor · Click a painting to enter its era · A door waits at the end");
+ $("corToast").textContent=L("这一幕还在建造中","This scene is still being built");
+ $("backCor").textContent=L("回到走廊","Back to Corridor");
+ $("muteBtn").textContent=muted?L("♪ 已静音","♪ Muted"):L("♪ 音效","♪ Sound");
+ $("langBtn").textContent=lang=="zh"?"EN":"中文";
+ $("langBtn2").textContent=lang=="zh"?"EN":"中文";
+ $("scHint").textContent=HINT_TEXT;
+ $("pocketPanel").querySelector("h4").textContent=L("口袋 · 从各时代带回的物件","Pocket · Kept from every era");
+ renderPocket();
+ $("dlgX").textContent=L("关闭（空格）","Close (Space)");
+ $("dlgIn").placeholder=L("用中文或 English 回答…（空格关闭对话）","Reply in any language… (Space closes)");
+ $("dlgSend").textContent=L("发送","Send");
+ document.querySelector("#photoF .pmk").textContent=L("TIME CORRIDOR · 拍照模式（按 H 退出）","TIME CORRIDOR · Photo Mode (H to exit)");
+ $("endBox").querySelector("h2").textContent=L("你已抵达时间之外","You Have Arrived Beyond Time");
+ $("endClose").textContent=L("继续游荡","Wander On");
+ corFrames.forEach(function(f){var cap=f.el.querySelector(".cap");if(cap){cap.querySelector("b").textContent=t2(f.e.name);cap.querySelector("span").textContent=t2(f.e.year)}});
+ var dl2=document.querySelector(".doorLbl");if(dl2)dl2.textContent=L("时间尽头","Beyond Time's End");
+ if(sceneOpen&&era){
+  $("scEra").textContent=t2(era.name)+(inside?L(" · 屋内"," · Indoors"):"");
+  $("scYear").textContent=t2(era.year);
+  if(dlgOpen&&dlgNpc)$("dlgName").textContent=t2(dlgNpc.n)+" · "+t2(era.name);
+ }
+ updPk();
+}
+function toggleLang(){lang=lang=="zh"?"en":"zh";ls("tcLang",lang);applyLang()}
+$("langBtn").addEventListener("click",toggleLang);
+$("langBtn2").addEventListener("click",toggleLang);
+applyLang();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

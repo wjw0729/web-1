@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Museum | Scene Portal</title>
+    <meta name="description" content="Five places, five memories I wrote myself — a small archive of the scenes in this site.">
+    <meta name="theme-color" content="#050918">
+    <meta property="og:title" content="Travel Museum | Scene Portal">
+    <meta property="og:description" content="Five places, five memories I wrote myself — a small archive of the scenes in this site.">
+    <meta property="og:image" content="https://wjw0729.github.io/web-1/scene-portal/images/og-image.jpg">
+    <meta property="og:url" content="https://wjw0729.github.io/web-1/scene-portal/museum.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* 局部强制隐藏底部，防止它挤占画廊空间 */
+        #site-footer { display: none !important; }
+        
+        /* 标题样式 */
+        .glow-title { 
+            position: absolute; top: 100px; width: 100%; text-align: center; 
+            font-size: 3rem; font-weight: 800; 
+            background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            z-index: 10; pointer-events: none; 
+        }
+        .subtitle { 
+            position: absolute; top: 160px; width: 100%; text-align: center; 
+            color: #a0a0b0; font-size: 1.1rem; z-index: 10; pointer-events: none; 
+        }
+    </style>
+</head>
+<body>
+    <header id="site-header">
+      <nav class="top-nav" id="site-nav" aria-label="Main navigation">
+    <div class="logo">
+        <span>✦ Scene Portal</span>
+    </div>
+    <div class="nav-links">
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="gallery.html" class="nav-item">Gallery</a>
+        <a href="hourglass-intro.html" class="nav-item">Hourglass</a>
+        <a href="museum.html" class="nav-item">Museum</a>
+        <a href="about.html" class="nav-item">About</a>
+    </div>
+    <!-- 右上角三大金刚 -->
+    <div class="nav-icons">
+        <button id="lang-toggle" class="icon-btn" title="Switch Language">中</button>
+        <button id="sound-toggle" class="icon-btn" title="Toggle Sound">🔊</button>
+        <button id="theme-toggle" class="icon-btn" title="Toggle Theme">☾</button>
+    </div>
+</nav>
+      </header>
+    <!-- 宇宙科技背景网格 -->
+    <div class="museum-bg"></div>
+    <div id="stars-container"></div>
+
+    <main class="museum-container">
+        <h1 class="glow-title">Memory Archive</h1>
+        <p class="subtitle">Five places, five things I did not want to forget.</p>
+    </main>
+
+    <footer class="site-footer" id="site-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <h3>✦ Scene Portal</h3>
+            <p>An immersive 360° 3D scene simulator.</p>
+        </div>
+        <div class="footer-nav">
+            <a href="index.html">Home</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="hourglass-intro.html">Hourglass</a>
+            <a href="museum.html">Museum</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <h4>SAY HELLO</h4>
+            <a href="mailto:1083205161@qq.com">1083205161@qq.com</a>
+        </div>
+    </div>
+    <p class="credits">Images: original scene artwork created and edited by the author (AI-assisted). Brand spiral redrawn as vector by the author. Built with Three.js r128 (bundled locally) and Google Fonts. No data is stored.</p>
+        <div class="footer-bottom">
+        <p>© 2026 WANG Jingwen. Built with care.</p>
+        <a href="#" class="back-to-top">Back to top ↑</a>
+    </div>
+</footer>
+                        
+    <script src="parts.js"></script>
+    <script>
+/* 预置内容，不依赖浏览器存储 / 服务器 / 数据库 */
+(function () {
+    // 星空背景
+    const starsContainer = document.getElementById('stars-container');
+    for (let i = 0; i < 150; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + 'vw';
+        star.style.top = Math.random() * 100 + 'vh';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.animationDuration = Math.random() * 2 + 2 + 's';
+        starsContainer.appendChild(star);
+    }
+
+    // 我自己从五个场景带回的记忆（页面内容，不是用户提交的数据）
+    const memories = [
+        { scene: 'Peach Blossom Spring', image: 'images/gallery-peach.jpg',
+          alt: 'Peach blossom in soft pink light', date: 'Spring, 2026',
+          text: 'The path disappears behind the blossom. I stopped walking and just listened.' },
+        { scene: 'Scottish Highlands', image: 'images/gallery-highlands.jpg',
+          alt: 'Layered mountains under mist', date: 'Autumn, 2025',
+          text: 'The mist moved faster than I could. Every ridge looked like the last one.' },
+        { scene: 'Arctic Lake', image: 'images/gallery-arctic.jpg',
+          alt: 'A frozen lake under a blue sky', date: 'Winter, 2025',
+          text: 'The loudest thing there was the sound of my own coat.' },
+        { scene: 'Mountain Lake', image: 'images/gallery-mountains.jpg',
+          alt: 'A lake reflecting golden evening light', date: 'Summer, 2025',
+          text: 'For ten minutes the water held the whole mountain upside down.' },
+        { scene: 'BiUH Campus', image: 'images/campus-cover.jpg',
+          alt: 'The BiUH campus on a clear day', date: 'Every day',
+          text: 'The place I keep coming back to, and the reason I wanted to build a door.' }
+    ];
+
+    const container = document.querySelector('.museum-container');
+    const grid = document.createElement('section');
+    grid.className = 'memory-grid';
+    grid.setAttribute('aria-label', 'Memories from the five scenes');
+
+    memories.forEach(function (mem, i) {
+        const card = document.createElement('article');
+        card.className = 'floating-card';
+        card.style.left = (18 + (i % 3) * 31 + (i % 2) * 4) + 'vw';
+        card.style.top = (38 + Math.floor(i / 3) * 34 + (i % 2) * 5) + 'vh';
+        card.style.animation = 'floatAnim ' + (4 + i * 0.7) + 's infinite ease-in-out alternate';
+        card.style.animationDelay = '-' + (i * 0.9) + 's';
+        card.innerHTML =
+            '<img class="card-img" src="' + mem.image + '" alt="' + mem.alt + '">' +
+            '<div class="card-info"><h2>' + mem.scene + '</h2>' +
+            '<blockquote>&ldquo;' + mem.text + '&rdquo;</blockquote>' +
+            '<span class="date">' + mem.date + '</span></div>';
+        grid.appendChild(card);
+    });
+    container.appendChild(grid);
+
+    const css = document.createElement('style');
+    css.textContent = '@keyframes floatAnim{from{margin-top:-14px;margin-left:-8px}to{margin-top:14px;margin-left:8px}}';
+    document.head.appendChild(css);
+})();
+</script>
+</body>
+</html>

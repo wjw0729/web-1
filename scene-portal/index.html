@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Scene Portal | 时空坐标</title>
+    <meta name="description" content="An interactive 3D globe: pick a place, step through the portal and stand inside a 360 degree panorama.">
+    <meta name="theme-color" content="#050918">
+    <meta property="og:title" content="The Scene Portal | 时空坐标">
+    <meta property="og:description" content="An interactive 3D globe: pick a place, step through the portal and stand inside a 360 degree panorama.">
+    <meta property="og:image" content="https://wjw0729.github.io/web-1/scene-portal/images/og-image.jpg">
+    <meta property="og:url" content="https://wjw0729.github.io/web-1/scene-portal/index.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="js/three.min.js"></script>
+</head>
+<body>
+    <h1 class="sr-only">Scene Portal - choose a place and step inside</h1>
+    <header id="site-header">
+      <nav class="top-nav" id="site-nav" aria-label="Main navigation">
+    <div class="logo">
+        <span>✦ Scene Portal</span>
+    </div>
+    <div class="nav-links">
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="gallery.html" class="nav-item">Gallery</a>
+        <a href="hourglass-intro.html" class="nav-item">Hourglass</a>
+        <a href="museum.html" class="nav-item">Museum</a>
+        <a href="about.html" class="nav-item">About</a>
+    </div>
+    <!-- 右上角三大金刚 -->
+    <div class="nav-icons">
+        <button id="lang-toggle" class="icon-btn" title="Switch Language">中</button>
+        <button id="sound-toggle" class="icon-btn" title="Toggle Sound">🔊</button>
+        <button id="theme-toggle" class="icon-btn" title="Toggle Theme">☾</button>
+    </div>
+</nav>
+      </header>
+    <!-- 背景星空 -->
+    <div id="stars-container"></div>
+    
+    <!-- 全局导航 -->
+    
+    <!-- 3D 画布 -->
+    <main id="canvas-container" aria-label="Interactive 3D globe">
+        <div id="mouse-coords"></div>
+        <div id="ui-hints"><p>🖱️ Drag to Rotate | 🔍 Scroll to Zoom | 👆 Hover & Click</p></div>
+    </main>
+    
+    <!-- 悬浮提示框 -->
+    <div id="tooltip" class="hidden">
+        <h3 id="tooltip-title">Location</h3>
+        <p id="tooltip-coords">Lat: 0, Lon: 0</p>
+        <div class="tooltip-action">Click to enter portal →</div>
+    </div>
+    
+    <!-- 底部信息 -->
+
+    <!-- 光带吸入遮罩 -->
+    <div id="warp-overlay" class="hidden">
+        <div id="warp-lines"></div>
+        <div id="warp-core"></div>
+    </div>
+
+    <!-- 穿越确认弹窗 -->
+    <div id="portal-modal" class="hidden">
+        <div class="modal-content">
+            <h2 id="dest-name">Destination</h2>
+            <p id="dest-coords">Coordinates</p>
+            <div class="portal-buttons">
+                <button id="cancel-btn">Stay</button>
+                <button id="confirm-btn">Enter Portal</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer" id="site-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <h3>✦ Scene Portal</h3>
+            <p>An immersive 360° 3D scene simulator.</p>
+        </div>
+        <div class="footer-nav">
+            <a href="index.html">Home</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="hourglass-intro.html">Hourglass</a>
+            <a href="museum.html">Museum</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <h4>SAY HELLO</h4>
+            <a href="mailto:1083205161@qq.com">1083205161@qq.com</a>
+        </div>
+    </div>
+    <p class="credits">Images: original scene artwork created and edited by the author (AI-assisted). Brand spiral redrawn as vector by the author. Built with Three.js r128 (bundled locally) and Google Fonts. No data is stored.</p>
+        <div class="footer-bottom">
+        <p>© 2026 WANG Jingwen. Built with care.</p>
+        <a href="#" class="back-to-top">Back to top ↑</a>
+    </div>
+</footer>
+                        
+    <script src="parts.js"></script>
+    <script>
+        // 1. 生成星空背景
+        const starsContainer = document.getElementById('stars-container');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = Math.random() * 2 + 2 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        // 2. 3D 场景初始化
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 30); 
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); 
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        // 3. 地球贴图加载
+        const geometry = new THREE.SphereGeometry(5, 64, 64);
+        const texture = new THREE.TextureLoader().load('images/earth-texture.jpg'); 
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+        const earth = new THREE.Mesh(geometry, material);
+        earth.rotation.y = -Math.PI / 1.5;
+        scene.add(earth);
+
+        // 4. 红色 3D 图钉与常驻标签生成
+        let markers = [];
+        function createMarker(lat, lon, color, name, url) {
+            const group = new THREE.Group();
+            // 针体
+            const pinGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.6, 8);
+            const pinMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const pin = new THREE.Mesh(pinGeo, pinMat);
+            pin.position.y = 0.3;
+            group.add(pin);
+            // 圆头
+            const headGeo = new THREE.SphereGeometry(0.22, 16, 16);
+            const headMat = new THREE.MeshBasicMaterial({ color: color });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 0.6;
+            group.add(head);
+
+            // 计算经纬度坐标
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 180) * (Math.PI / 180);
+            const radius = 5.05; 
+            group.position.x = -(radius * Math.sin(phi) * Math.cos(theta));
+            group.position.z = (radius * Math.sin(phi) * Math.sin(theta));
+            group.position.y = (radius * Math.cos(phi));
+
+            group.lookAt(0, 0, 0);
+            group.rotateX(Math.PI / 2); 
+
+            // 🔥 创建 2D HTML 常驻标签
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'pin-label';
+            labelDiv.innerText = name;
+            container.appendChild(labelDiv);
+
+            group.userData = { name, url, lat, lon, head: head, baseColor: new THREE.Color(color), labelDiv: labelDiv };
+            earth.add(group);
+            markers.push(group); 
+        }
+
+        createMarker(30, 120, 0xff2a2a, 'Peach Spring', 'peach-spring.html');
+        createMarker(57, -4, 0xff2a2a, 'Scottish Highlands', 'highlands.html');
+        createMarker(66, 25, 0xff2a2a, 'Arctic Lake', 'arctic.html');
+        createMarker(40, -110, 0xff2a2a, 'Mountain Lake', 'mountains.html');
+        createMarker(19.5, 109.0, 0xff2a2a, 'BiUH Campus', 'campus.html'); 
+
+        // 5. 🔥 左下角全息沙漏入口
+        const portalGeo = new THREE.TorusGeometry(1.5, 0.1, 16, 100);
+        const portalMat = new THREE.MeshBasicMaterial({ color: 0xFFD700 }); // 金色
+        const hourglassPortal = new THREE.Mesh(portalGeo, portalMat);
+        hourglassPortal.position.set(-13, -6, 5); // 左下角位置
+        scene.add(hourglassPortal);
+        
+        // 沙漏光晕
+        const glowGeo = new THREE.TorusGeometry(1.7, 0.2, 16, 100);
+        const glowMat = new THREE.MeshBasicMaterial({ color: 0xFFD700, transparent: true, opacity: 0.3 });
+        const glowRing = new THREE.Mesh(glowGeo, glowMat);
+        hourglassPortal.add(glowRing);
+        hourglassPortal.userData = { isHourglass: true, name: '时间沙漏', url: 'hourglass-intro.html' };
+
+        // 沙漏的 2D 标签
+        const hgLabel = document.createElement('div');
+        hgLabel.className = 'pin-label';
+        hgLabel.style.borderColor = '#FFD700';
+        hgLabel.style.textShadow = '0 0 5px #FFD700';
+        hgLabel.innerText = '时间沙漏 · The Hourglass';
+        container.appendChild(hgLabel);
+        hourglassPortal.userData.labelDiv = hgLabel;
+
+        // 6. 交互逻辑
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let hasDragged = false; 
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const tooltip = document.getElementById('tooltip');
+        const tooltipTitle = document.getElementById('tooltip-title');
+        const tooltipCoords = document.getElementById('tooltip-coords');
+        const modal = document.getElementById('portal-modal');
+        const destNameText = document.getElementById('dest-name');
+        const destCoordsText = document.getElementById('dest-coords');
+        const mouseCoordsText = document.getElementById('mouse-coords'); 
+        let currentTargetUrl = '';
+
+        window.addEventListener('mousemove', (e) => {
+            mouseCoordsText.style.left = (e.clientX + 15) + 'px';
+            mouseCoordsText.style.top = (e.clientY + 15) + 'px';
+
+            if (isDragging) {
+                let deltaX = e.clientX - previousMousePosition.x;
+                let deltaY = e.clientY - previousMousePosition.y;
+                if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) hasDragged = true;
+                earth.rotation.y += deltaX * 0.005;
+                earth.rotation.x += deltaY * 0.005;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+            if (hasDragged) { tooltip.classList.add('hidden'); return; }
+
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+
+            // 经纬度显示
+            const earthIntersects = raycaster.intersectObject(earth);
+            if (earthIntersects.length > 0) {
+                mouseCoordsText.style.display = 'block';
+                const point = earthIntersects[0].point;
+                const localPoint = earth.worldToLocal(point.clone()).normalize();
+                const lat = 90 - (Math.acos(localPoint.y) * 180 / Math.PI);
+                let lon = (Math.atan2(localPoint.z, localPoint.x) * 180 / Math.PI) - 90;
+                if (lon < -180) lon += 360;
+                mouseCoordsText.innerText = `Lat: ${lat.toFixed(2)}°  Lon: ${lon.toFixed(2)}°`;
+            } else {
+                mouseCoordsText.style.display = 'none';
+            }
+
+            // 图钉与沙漏的悬停检测
+            const intersects = raycaster.intersectObjects(markers, true); 
+            markers.forEach(m => { if (m.userData.isHovered) { m.userData.isHovered = false; m.scale.set(1, 1, 1); m.userData.labelDiv.style.background = 'rgba(0,0,0,0.6)'; } });
+            const hourglassHit = raycaster.intersectObject(hourglassPortal);
+
+            if (hourglassHit.length > 0) {
+                tooltip.classList.remove('hidden');
+                tooltip.style.left = (e.clientX) + 'px';
+                tooltip.style.top = (e.clientY) + 'px';
+                tooltipTitle.innerText = "时间沙漏";
+                tooltipCoords.innerText = "Entry to the Time Corridor";
+                currentTargetUrl = "hourglass-intro.html";
+                destNameText.innerText = "The Hourglass";
+                destCoordsText.innerText = "Enter the River of Time";
+            } else if (intersects.length > 0) {
+                const hoveredMarker = intersects[0].object.parent;
+                hoveredMarker.userData.isHovered = true;
+                hoveredMarker.scale.set(1.5, 1.5, 1.5); 
+                tooltip.classList.remove('hidden');
+                tooltip.style.left = (e.clientX) + 'px';
+                tooltip.style.top = (e.clientY) + 'px';
+                tooltipTitle.innerText = hoveredMarker.userData.name;
+                tooltipCoords.innerText = `Lat: ${hoveredMarker.userData.lat}°, Lon: ${hoveredMarker.userData.lon}°`;
+                currentTargetUrl = hoveredMarker.userData.url;
+                destNameText.innerText = hoveredMarker.userData.name;
+                destCoordsText.innerText = `Lat: ${hoveredMarker.userData.lat}°, Lon: ${hoveredMarker.userData.lon}°`;
+                hoveredMarker.userData.labelDiv.style.background = 'rgba(255, 42, 42, 0.8)';
+            } else {
+                tooltip.classList.add('hidden');
+            }
+        });
+
+        container.addEventListener('mousedown', (e) => {
+            isDragging = true; hasDragged = false; previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault(); 
+            camera.position.z += e.deltaY * 0.05; 
+            if (camera.position.z < 20) camera.position.z = 20;
+            if (camera.position.z > 60) camera.position.z = 60;
+        }, { passive: false });
+
+        container.addEventListener('click', () => {
+            if (hasDragged) return;
+            if (currentTargetUrl) modal.classList.remove('hidden');
+        });
+
+        document.getElementById('cancel-btn').addEventListener('click', () => { 
+            modal.classList.add('hidden'); 
+        });
+
+        // 光带吸入与水泡音效
+        const warpOverlay = document.getElementById('warp-overlay');
+        const warpLines = document.getElementById('warp-lines');
+        const bubbleAudio = new Audio('others/magic-bubble.mp3');
+
+        document.getElementById('confirm-btn').addEventListener('click', () => { 
+            if (currentTargetUrl) {
+                modal.classList.add('hidden');
+                warpOverlay.classList.remove('hidden');
+                
+                warpLines.innerHTML = '';
+                for(let i=0; i<40; i++) {
+                    let line = document.createElement('div');
+                    line.className = 'warp-line';
+                    line.style.transform = `rotate(${Math.random()*360}deg)`;
+                    line.style.animationDelay = `${Math.random()*0.5}s`;
+                    line.style.height = `${20 + Math.random()*40}vh`;
+                    warpLines.appendChild(line);
+                }
+
+                warpOverlay.classList.add('warping');
+                
+                if (window.isSoundOn) {
+                    bubbleAudio.volume = 1;
+                    bubbleAudio.play().catch(() => {});
+                }
+                
+                setTimeout(() => { 
+                    window.location.href = currentTargetUrl; 
+                }, 1500);
+            }
+        });
+
+        // 7. 渲染循环：呼吸、标签跟随、沙漏自转
+        let time = 0;
+        const tempV = new THREE.Vector3();
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.08;
+            if (!isDragging) { earth.rotation.y += 0.001; }
+            
+            hourglassPortal.rotation.x += 0.01;
+            hourglassPortal.rotation.y += 0.01;
+
+            // 更新地球图钉
+            markers.forEach(m => { 
+                if (m.userData.head) {
+                    const scale = 1 + Math.sin(time) * 0.15; 
+                    m.userData.head.scale.set(scale, scale, scale);
+                    if (m.userData.baseColor) {
+                        const intensity = 0.7 + (Math.sin(time) + 1) * 0.15; 
+                        m.userData.head.material.color.setRGB(
+                            m.userData.baseColor.r * intensity, 
+                            m.userData.baseColor.g * intensity, 
+                            m.userData.baseColor.b * intensity
+                        );
+                    }
+                }
+                if(m.userData.labelDiv) {
+                    m.userData.head.getWorldPosition(tempV);
+                    tempV.project(camera);
+                    const x = (tempV.x * .5 + .5) * window.innerWidth;
+                    const y = (tempV.y * -.5 + .5) * window.innerHeight;
+                    m.userData.labelDiv.style.left = `${x}px`;
+                    m.userData.labelDiv.style.top = `${y}px`;
+                    if(tempV.z > 1) m.userData.labelDiv.style.display = 'none';
+                    else m.userData.labelDiv.style.display = 'block';
+                }
+            });
+
+            // 更新沙漏标签
+            if(hourglassPortal.userData.labelDiv) {
+                hourglassPortal.getWorldPosition(tempV);
+                tempV.project(camera);
+                const x = (tempV.x * .5 + .5) * window.innerWidth;
+                const y = (tempV.y * -.5 + .5) * window.innerHeight;
+                hourglassPortal.userData.labelDiv.style.left = `${x}px`;
+                hourglassPortal.userData.labelDiv.style.top = `${y}px`;
+                if(tempV.z > 1) hourglassPortal.userData.labelDiv.style.display = 'none';
+                else hourglassPortal.userData.labelDiv.style.display = 'block';
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

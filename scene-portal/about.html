@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About | Scene Portal</title>
+    <meta name="description" content="Meet the administrator who built Scene Portal, and find out how the site was made.">
+    <meta name="theme-color" content="#050918">
+    <meta property="og:title" content="About | Scene Portal">
+    <meta property="og:description" content="Meet the administrator who built Scene Portal, and find out how the site was made.">
+    <meta property="og:image" content="https://wjw0729.github.io/web-1/scene-portal/images/og-image.jpg">
+    <meta property="og:url" content="https://wjw0729.github.io/web-1/scene-portal/about.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header id="site-header">
+      <nav class="top-nav" id="site-nav" aria-label="Main navigation">
+    <div class="logo">
+        <span>✦ Scene Portal</span>
+    </div>
+    <div class="nav-links">
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="gallery.html" class="nav-item">Gallery</a>
+        <a href="hourglass-intro.html" class="nav-item">Hourglass</a>
+        <a href="museum.html" class="nav-item">Museum</a>
+        <a href="about.html" class="nav-item">About</a>
+    </div>
+    <!-- 右上角三大金刚 -->
+    <div class="nav-icons">
+        <button id="lang-toggle" class="icon-btn" title="Switch Language">中</button>
+        <button id="sound-toggle" class="icon-btn" title="Toggle Sound">🔊</button>
+        <button id="theme-toggle" class="icon-btn" title="Toggle Theme">☾</button>
+    </div>
+</nav>
+      </header>
+    <!-- 星空背景 -->
+    <div id="stars-container"></div>
+    
+    <!-- 全局导航 -->
+
+    <!-- 主体内容：给了足够的 margin-top 避开导航栏 -->
+    <main class="main-card" style="margin-top: 150px; max-width: 1200px; margin-left: auto; margin-right: auto; padding: 0 20px;">
+        <h1 class="glow-title" style="font-size: 2.5rem; text-align: center;">About The Administrator</h1>
+        <p class="subtitle" style="text-align: center; margin-top: 10px;">The creator behind the Scene Portal.</p>
+
+        <section class="about-split" aria-label="About the author">
+            <!-- 左侧：身份介绍 -->
+            <div class="about-left">
+                <h2>Hello, I am WANG Jingwen.</h2>
+                <p class="big-statement">I am the Administrator of this Scene Portal.</p>
+                <p class="small-desc">
+                    I built this immersive 3D experience to let you escape reality. Through code, I can create any world you wish to visit. 
+                    Currently studying at BiUH, exploring the boundaries of WebGL and frontend development.
+                </p>
+                <div class="skills-tags">
+                    <span>HTML5</span>
+                    <span>CSS3</span>
+                    <span>Three.js</span>
+                    <span>Vanilla JS</span>
+                </div>
+            </div>
+            
+            <!-- 右侧：联系表单 -->
+            <div class="about-right">
+                <h3>✉️ Send a Message to the Administrator</h3>
+                <p>Have a question, or want a new scene created? Drop me a message.</p>
+                <form id="contact-form">
+                    <div class="form-group">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" placeholder="e.g. Traveler" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" placeholder="e.g. A request for a new world" required>
+                    </div>
+                    <button type="submit" class="action-btn">Send Message</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- 底部 -->
+    
+    <!-- 引入导航 -->
+    <footer class="site-footer" id="site-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <h3>✦ Scene Portal</h3>
+            <p>An immersive 360° 3D scene simulator.</p>
+        </div>
+        <div class="footer-nav">
+            <a href="index.html">Home</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="hourglass-intro.html">Hourglass</a>
+            <a href="museum.html">Museum</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <h4>SAY HELLO</h4>
+            <a href="mailto:1083205161@qq.com">1083205161@qq.com</a>
+        </div>
+    </div>
+    <p class="credits">Images: original scene artwork created and edited by the author (AI-assisted). Brand spiral redrawn as vector by the author. Built with Three.js r128 (bundled locally) and Google Fonts. No data is stored.</p>
+        <div class="footer-bottom">
+        <p>© 2026 WANG Jingwen. Built with care.</p>
+        <a href="#" class="back-to-top">Back to top ↑</a>
+    </div>
+</footer>
+                        
+    <script src="parts.js"></script>
+    
+    <script>
+        // 生成星空背景
+        const starsContainer = document.getElementById('stars-container');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = Math.random() * 2 + 2 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        // 发邮件表单逻辑
+        document.getElementById('contact-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const subject = document.getElementById('subject').value;
+            window.location.href = `mailto:1083205161@qq.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("Hi, I am " + name + ".\n")}`;
+            alert("Your default email app is opening.");
+        });
+    </script>
+</body>
+</html>

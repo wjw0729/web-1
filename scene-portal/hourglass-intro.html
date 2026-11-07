@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter the River of Time</title>
+    <meta name="description" content="The entrance to the River of Time: a walk through six eras of human history.">
+    <meta name="theme-color" content="#050918">
+    <meta property="og:title" content="Enter the River of Time">
+    <meta property="og:description" content="The entrance to the River of Time: a walk through six eras of human history.">
+    <meta property="og:image" content="https://wjw0729.github.io/web-1/scene-portal/images/og-image.jpg">
+    <meta property="og:url" content="https://wjw0729.github.io/web-1/scene-portal/hourglass-intro.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 第一屏：沙漏与文字独占整个视口 */
+        .intro-stage {
+            position: relative;
+            min-height: 100vh;
+            padding: 90px 20px 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        /* 第二屏：页脚滚动后才出现（JS 不可用时仍然可见） */
+        .intro-after { position: relative; z-index: 10; }
+        .intro-after.js-reveal { opacity: 0; transform: translateY(30px); transition: opacity .9s ease, transform .9s ease; }
+        .intro-after.js-reveal.in-view { opacity: 1; transform: none; }
+        .intro-page #site-footer { margin-top: 0; }
+
+        /* 背后的极暗微光 */
+        .divine-light {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 50% 40%, rgba(212, 175, 55, 0.08) 0%, transparent 60%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 悬浮的沙漏：整屏首屏时放大，仍保留原有的浮动动画 */
+        .hourglass-wrap {
+            transform: scale(1.55);
+            transform-origin: center center;
+            margin: 56px 0 78px;
+            z-index: 10;
+        }
+        .hourglass {
+            position: relative;
+            width: 120px;
+            height: 180px;
+            z-index: 10;
+            animation: float 6s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.5));
+        }
+
+        /* 沙漏上下金属盖 */
+        .hourglass::before, .hourglass::after {
+            content: '';
+            position: absolute;
+            left: 10px;
+            width: 100px;
+            height: 8px;
+            background: linear-gradient(90deg, #8B6508, #FFD700, #8B6508);
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+        .hourglass::before { top: 0; }
+        .hourglass::after { bottom: 0; }
+
+        /* 玻璃形状 */
+        .glass {
+            position: absolute;
+            top: 8px;
+            left: 20px;
+            width: 80px;
+            height: 164px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 40px 40px 40px 40px / 40px 40px 40px 40px;
+            box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        /* 中间流下的金光沙子 */
+        .sand-flow {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 60px;
+            background: #FFD700;
+            box-shadow: 0 0 8px #FFD700, 0 0 15px #FFD700;
+            animation: flow 2s linear infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes flow {
+            0% { opacity: 0.3; height: 60px; }
+            50% { opacity: 1; height: 65px; }
+            100% { opacity: 0.3; height: 60px; }
+        }
+
+        /* 神明般的呼吸发光文字 */
+        .intro-kicker {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.42em;
+            text-transform: uppercase;
+            color: rgba(255, 215, 0, 0.62);
+            margin: 0;
+            z-index: 10;
+            text-align: center;
+        }
+        .divine-text {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 5.2vw, 3.6rem);
+            line-height: 1.32;
+            color: #FFD700;
+            margin-top: 26px;
+            text-align: center;
+            letter-spacing: 3px;
+            z-index: 10;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+            animation: divineBreathe 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes divineBreathe {
+            0% { 
+                opacity: 0.6; 
+                text-shadow: 0 0 5px rgba(255, 215, 0, 0.2), 0 0 10px rgba(255, 215, 0, 0.1); 
+            }
+            100% { 
+                opacity: 1; 
+                text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2); 
+            }
+        }
+
+        /* 进入按钮 */
+        .enter-btn {
+            margin-top: 50px;
+            padding: 12px 30px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: #FFD700;
+            background: transparent;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+        }
+
+        .enter-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), inset 0 0 10px rgba(255, 215, 0, 0.3);
+            text-shadow: 0 0 10px #FFD700;
+        }
+
+        /* 离开时的金光爆发 */
+        #flash-transition {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+            transition: opacity 1s ease;
+        }
+        .flash-out { opacity: 1 !important; }
+
+        /* 底部滚动提示：告诉访客页脚在下一屏 */
+        .scroll-cue {
+            position: absolute;
+            bottom: 26px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: rgba(255, 215, 0, 0.5);
+            transition: opacity .5s ease;
+        }
+        .scroll-cue span { white-space: nowrap; }
+        .scroll-cue i {
+            display: block;
+            width: 1px;
+            height: 34px;
+            background: linear-gradient(rgba(255,215,0,.7), transparent);
+            animation: cueDown 1.8s ease-in-out infinite;
+        }
+        @keyframes cueDown { 0%,100% { transform: translateY(0); opacity: .4 } 50% { transform: translateY(8px); opacity: 1 } }
+        body.scrolled .scroll-cue { opacity: 0; pointer-events: none; }
+
+        @media (max-width: 820px) {
+            .intro-stage { padding: 110px 16px 80px; }
+            .hourglass-wrap { transform: scale(1.25); margin: 30px 0 44px; }
+            .divine-text { letter-spacing: 1px; }
+            .intro-kicker { font-size: 0.65rem; letter-spacing: 0.28em; }
+            .enter-btn { margin-top: 34px; }
+            .scroll-cue { font-size: 0.58rem; letter-spacing: 0.12em; }
+        }
+        @media (max-height: 680px) {
+            .hourglass-wrap { transform: scale(1.1); margin: 14px 0 30px; }
+            .divine-text { font-size: clamp(1.7rem, 4.6vw, 2.6rem); margin-top: 14px; }
+            .enter-btn { margin-top: 24px; }
+        }
+
+    </style>
+</head>
+<body class="intro-page">
+    <h1 class="sr-only">Enter the River of Time</h1>
+    <header id="site-header">
+      <nav class="top-nav" id="site-nav" aria-label="Main navigation">
+    <div class="logo">
+        <span>✦ Scene Portal</span>
+    </div>
+    <div class="nav-links">
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="gallery.html" class="nav-item">Gallery</a>
+        <a href="hourglass-intro.html" class="nav-item">Hourglass</a>
+        <a href="museum.html" class="nav-item">Museum</a>
+        <a href="about.html" class="nav-item">About</a>
+    </div>
+    <!-- 右上角三大金刚 -->
+    <div class="nav-icons">
+        <button id="lang-toggle" class="icon-btn" title="Switch Language">中</button>
+        <button id="sound-toggle" class="icon-btn" title="Toggle Sound">🔊</button>
+        <button id="theme-toggle" class="icon-btn" title="Toggle Theme">☾</button>
+    </div>
+</nav>
+      </header>
+    <!-- 顶部导航 -->
+
+    <!-- 第一屏：沙漏 + 标题 + 按钮，占满整个视口 -->
+    <main class="intro-stage" aria-label="Enter the River of Time">
+        <div class="divine-light"></div>
+
+        <!-- 沙漏 -->
+        <div class="hourglass-wrap">
+            <div class="hourglass">
+                <div class="glass"></div>
+                <div class="sand-flow"></div>
+            </div>
+        </div>
+
+        <p class="intro-kicker">Six eras &middot; one corridor</p>
+
+        <!-- 神明呼吸文字 -->
+        <div class="divine-text">
+            Do you wish to enter<br>the river of time?
+        </div>
+
+        <!-- 进入按钮 -->
+        <button class="enter-btn" onclick="enterCorridor()">[ Enter the Corridor ]</button>
+
+        <div class="scroll-cue" aria-hidden="true"><span>Scroll for credits &amp; links</span><i></i></div>
+    </main>
+
+    <!-- 金光转场遮罩 -->
+    <div id="flash-transition"></div>
+
+    <!-- 第二屏：滚动到这里才淡入 -->
+    <div class="intro-after">
+    <footer class="site-footer" id="site-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <h3>✦ Scene Portal</h3>
+            <p>An immersive 360° 3D scene simulator.</p>
+        </div>
+        <div class="footer-nav">
+            <a href="index.html">Home</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="hourglass-intro.html">Hourglass</a>
+            <a href="museum.html">Museum</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <h4>SAY HELLO</h4>
+            <a href="mailto:1083205161@qq.com">1083205161@qq.com</a>
+        </div>
+    </div>
+    <p class="credits">Images: original scene artwork created and edited by the author (AI-assisted). Brand spiral redrawn as vector by the author. Built with Three.js r128 (bundled locally) and Google Fonts. No data is stored.</p>
+        <div class="footer-bottom">
+        <p>© 2026 WANG Jingwen. Built with care.</p>
+        <a href="#" class="back-to-top">Back to top ↑</a>
+    </div>
+</footer>
+    </div>
+
+    <script src="parts.js"></script>
+    <script>
+        function enterCorridor() {
+            // 触发全屏金光特效
+            const flash = document.getElementById('flash-transition');
+            flash.classList.add('flash-out');
+
+            // 延迟 1 秒后跳转到时间走廊页面
+            setTimeout(() => {
+                window.location.href = 'hourglass.html';
+            }, 1000); 
+        }
+
+        // 页脚只在滚动到第二屏时淡入；浏览器不支持观察器时保持始终可见
+        (function () {
+            var after = document.querySelector('.intro-after');
+            if (!after || !('IntersectionObserver' in window)) return;
+            after.classList.add('js-reveal');
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) {
+                        after.classList.add('in-view');
+                        io.disconnect();
+                    }
+                });
+            }, { threshold: 0.12 });
+            io.observe(after);
+            window.addEventListener('scroll', function () {
+                document.body.classList.toggle('scrolled', window.scrollY > 40);
+            }, { passive: true });
+        })();
+    </script>
+</body>
+</html>
